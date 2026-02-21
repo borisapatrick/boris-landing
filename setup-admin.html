@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin Setup Guide | Boris Enterprises</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/favicon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .setup-guide {
+      background: var(--white);
+      padding: 60px 0 80px;
+    }
+
+    .setup-guide .container {
+      max-width: 800px;
+    }
+
+    .setup-intro {
+      color: #555;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      margin-bottom: 48px;
+      text-align: center;
+    }
+
+    .setup-step {
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      margin-bottom: 32px;
+      overflow: hidden;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px;
+      background: var(--gray-bg);
+      border-bottom: 1px solid #E8E8E8;
+    }
+
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: var(--red);
+      color: var(--white);
+      border-radius: 50%;
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .step-header h3 {
+      font-size: 1.15rem;
+      margin: 0;
+    }
+
+    .step-body {
+      padding: 24px;
+    }
+
+    .step-body ol,
+    .step-body ul {
+      padding-left: 24px;
+      margin: 0;
+    }
+
+    .step-body li {
+      padding: 6px 0;
+      color: #444;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    .step-body p {
+      color: #444;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+
+    .step-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .code-inline {
+      display: inline-block;
+      background: #F0F0F0;
+      color: var(--steel);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #DDD;
+    }
+
+    .code-block {
+      background: var(--steel);
+      color: #E0E0E0;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9rem;
+      padding: 16px 20px;
+      border-radius: 6px;
+      margin: 12px 0;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+
+    .code-block .code-comment {
+      color: #888;
+    }
+
+    .code-block .code-field {
+      color: #FF9800;
+    }
+
+    .code-block .code-value {
+      color: #81C784;
+    }
+
+    .step-note {
+      background: #FFF8E1;
+      border: 1px solid #FFE082;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-top: 16px;
+      font-size: 0.9rem;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .step-note strong {
+      color: var(--steel);
+    }
+
+    .setup-done {
+      text-align: center;
+      padding: 40px 24px;
+      background: var(--gray-bg);
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+
+    .setup-done h3 {
+      font-size: 1.3rem;
+      color: var(--red);
+      margin-bottom: 12px;
+    }
+
+    .setup-done p {
+      color: #555;
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .step-header {
+        padding: 16px 20px;
+      }
+
+      .step-body {
+        padding: 20px;
+      }
+
+      .code-block {
+        font-size: 0.8rem;
+        padding: 12px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="nav-logo">
+        <img src="assets/logo.png" alt="Boris Enterprises Auto Repair Shop in East Jordan, MI">
+      </a>
+      <ul class="nav-links">
+        <li><a href="https://www.facebook.com/aaronsrepairshop" target="_blank" rel="noopener noreferrer" class="nav-facebook" aria-label="Facebook"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+        <li id="nav-auth-item"><a href="login.html">Login</a></li>
+        <li><a href="tel:2316750723" class="btn btn-primary nav-cta">CALL 231-675-0723</a></li>
+      </ul>
+      <button class="nav-toggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <section class="page-hero">
+    <h1>ADMIN SETUP GUIDE</h1>
+  </section>
+
+  <section class="setup-guide">
+    <div class="container">
+      <p class="setup-intro">Follow these steps to set up the first admin account for your Boris Enterprises site. This process only needs to be done once, and must be completed by someone with access to the Firebase Console.</p>
+
+      <!-- Step 1 -->
+      <div class="setup-step">
+        <div class="step-header">
+          <span class="step-number">1</span>
+          <h3>Create a Regular Account</h3>
+        </div>
+        <div class="step-body">
+          <ol>
+            <li>Go to the Boris Enterprises website</li>
+            <li>Click <strong>Login</strong> in the navigation bar</li>
+            <li>Switch to the <strong>Sign Up</strong> tab</li>
+            <li>Enter your name, email, phone, and choose a password</li>
+            <li>Click <strong>Create Account</strong></li>
+          </ol>
+          <div class="step-note">
+            <strong>Note:</strong> This creates your user account in Firebase Authentication and your profile in Firestore. You will use this same account for admin access.
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="setup-step">
+        <div class="step-header">
+          <span class="step-number">2</span>
+          <h3>Find Your User ID</h3>
+        </div>
+        <div class="step-body">
+          <ol>
+            <li>Go to the <strong>Firebase Console</strong> at <span class="code-inline">console.firebase.google.com</span></li>
+            <li>Select the <strong>boris-enterprises</strong> project</li>
+            <li>In the left sidebar, click <strong>Authentication</strong></li>
+            <li>Click the <strong>Users</strong> tab</li>
+            <li>Find your email address in the users list</li>
+            <li>Copy the <strong>User UID</strong> &mdash; it is a long string like <span class="code-inline">abc123def456...</span></li>
+          </ol>
+          <div class="step-note">
+            <strong>Tip:</strong> You can click the copy icon next to the UID to copy it to your clipboard.
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="setup-step">
+        <div class="step-header">
+          <span class="step-number">3</span>
+          <h3>Add Admin Document in Firestore</h3>
+        </div>
+        <div class="step-body">
+          <ol>
+            <li>In the Firebase Console, go to <strong>Firestore Database</strong> in the left sidebar</li>
+            <li>Click <strong>"Start collection"</strong> (or <strong>"+ Add collection"</strong> if you already have collections)</li>
+            <li>Set the <strong>Collection ID</strong> to:
+              <div class="code-block">admins</div>
+            </li>
+            <li>Set the <strong>Document ID</strong> to your User UID from Step 2:
+              <div class="code-block"><span class="code-comment">// Paste your User UID here, for example:</span>
+aBcDeFgHiJkLmNoPqRsTuVwXyZ123</div>
+            </li>
+            <li>Add a field with the following values:
+              <div class="code-block"><span class="code-field">Field name:</span>  <span class="code-value">role</span>
+<span class="code-field">Field type:</span>  <span class="code-value">string</span>
+<span class="code-field">Field value:</span> <span class="code-value">admin</span></div>
+            </li>
+            <li>Click <strong>Save</strong></li>
+          </ol>
+          <div class="step-note">
+            <strong>Important:</strong> The Document ID must exactly match your User UID from Firebase Authentication. The site checks for a document in the <span class="code-inline">admins</span> collection with an ID matching the logged-in user's UID.
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="setup-step">
+        <div class="step-header">
+          <span class="step-number">4</span>
+          <h3>Deploy Security Rules</h3>
+        </div>
+        <div class="step-body">
+          <ol>
+            <li>In the Firebase Console, go to <strong>Firestore Database</strong></li>
+            <li>Click the <strong>Rules</strong> tab at the top</li>
+            <li>Replace the default rules with the contents of the <span class="code-inline">firestore.rules</span> file from this project</li>
+            <li>The rules should look like this:</li>
+          </ol>
+          <div class="code-block">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+        &amp;&amp; request.auth.uid == userId;
+      allow read: if request.auth != null
+        &amp;&amp; exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+
+      match /vehicles/{vehicleId} {
+        allow read, write: if request.auth != null
+          &amp;&amp; request.auth.uid == userId;
+        allow read: if request.auth != null
+          &amp;&amp; exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+      }
+    }
+
+    match /appointments/{appointmentId} {
+      allow create: if request.auth != null
+        &amp;&amp; request.resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null
+        &amp;&amp; (resource.data.userId == request.auth.uid
+        || exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+      allow update: if request.auth != null
+        &amp;&amp; exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    match /admins/{userId} {
+      allow read: if request.auth != null
+        &amp;&amp; request.auth.uid == userId;
+    }
+  }
+}</div>
+          <ol start="5">
+            <li>Click <strong>Publish</strong> to deploy the rules</li>
+          </ol>
+          <div class="step-note">
+            <strong>What these rules do:</strong> Users can only read and write their own profile and vehicles. Users can create appointments and read their own. Admins can read all users, vehicles, and appointments, and can update appointment statuses. Users can only check their own admin status.
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="setup-step">
+        <div class="step-header">
+          <span class="step-number">5</span>
+          <h3>Test It</h3>
+        </div>
+        <div class="step-body">
+          <ol>
+            <li>Go back to the Boris Enterprises website</li>
+            <li>Log in with the email and password you created in Step 1</li>
+            <li>You should see <strong>"Admin"</strong> appear in the navigation bar</li>
+            <li>Click <strong>Admin</strong> to access the admin dashboard</li>
+            <li>You should be able to view all appointments and manage them</li>
+          </ol>
+          <div class="step-note">
+            <strong>Not seeing the Admin link?</strong> Try logging out and logging back in. Make sure the Document ID in the <span class="code-inline">admins</span> collection exactly matches your User UID, and that the security rules have been published.
+          </div>
+        </div>
+      </div>
+
+      <div class="setup-done">
+        <h3>ALL SET</h3>
+        <p>Your admin account is configured. You can now manage appointments and view customer data from the admin dashboard.</p>
+        <a href="index.html" class="btn btn-primary">BACK TO HOME</a>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <p class="footer-brand">BORIS ENTERPRISES</p>
+      <p class="footer-address">9890 Whitfield Rd, East Jordan, MI 49727</p>
+      <p class="footer-phone"><a href="tel:2316750723">231-675-0723</a></p>
+      <div class="footer-social">
+        <a href="https://www.facebook.com/aaronsrepairshop" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+      </div>
+      <p class="footer-copy">&copy; 2026 Boris Enterprises. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Boris Enterprises admin dashboard. Manage appointments and customers.">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin Dashboard | Boris Enterprises</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/favicon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* ==========================================
+       ADMIN DASHBOARD STYLES
+       ========================================== */
+
+    /* Stats Bar */
+    .admin-stats {
+      background: var(--white);
+      padding: 32px 0;
+      border-bottom: 1px solid #E8E8E8;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .stat-card {
+      background: var(--gray-bg);
+      border-radius: 8px;
+      padding: 24px 20px;
+      text-align: center;
+      border: 1px solid #E8E8E8;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-number {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: 2.4rem;
+      color: var(--red);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-label {
+      font-family: 'Oswald', sans-serif;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      color: #777;
+    }
+
+    .stat-card.stat-pending .stat-number { color: #E65100; }
+    .stat-card.stat-approved .stat-number { color: #2E7D32; }
+    .stat-card.stat-denied .stat-number { color: #C62828; }
+
+    /* Filter Tabs */
+    .admin-filters {
+      background: var(--white);
+      padding: 0 0 0 0;
+      border-bottom: 2px solid #E8E8E8;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 0;
+      list-style: none;
+    }
+
+    .filter-tab {
+      padding: 14px 24px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--silver);
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: color 0.3s, border-color 0.3s;
+    }
+
+    .filter-tab:hover {
+      color: var(--steel);
+    }
+
+    .filter-tab.active {
+      color: var(--red);
+      border-bottom-color: var(--red);
+    }
+
+    /* Admin Content Section */
+    .admin-section {
+      background: var(--gray-bg);
+      padding: 48px 0 80px;
+    }
+
+    .admin-section h2 {
+      font-size: 1.6rem;
+      margin-bottom: 24px;
+    }
+
+    .admin-panel {
+      margin-bottom: 48px;
+    }
+
+    /* Appointments List */
+    #appointments-list {
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+
+    #appointments-list .empty-state {
+      padding: 48px 24px;
+    }
+
+    /* Admin Appointment Card */
+    .admin-appt-card {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid #F0F0F0;
+      gap: 16px;
+      transition: background 0.2s;
+    }
+
+    .admin-appt-card:last-child {
+      border-bottom: none;
+    }
+
+    .admin-appt-card:hover {
+      background: #FAFAFA;
+    }
+
+    .appt-details {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .appt-customer {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.05rem;
+      text-transform: uppercase;
+      color: var(--steel);
+      letter-spacing: 0.5px;
+    }
+
+    .appt-vehicle {
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .appt-date {
+      font-size: 0.85rem;
+      color: #777;
+    }
+
+    .appt-message {
+      font-size: 0.85rem;
+      color: #888;
+      line-height: 1.4;
+      margin-top: 4px;
+    }
+
+    .appt-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+      align-items: flex-start;
+    }
+
+    .btn-approve,
+    .btn-deny {
+      padding: 8px 16px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .btn-approve {
+      background: #2E7D32;
+      color: var(--white);
+    }
+
+    .btn-approve:hover {
+      background: #1B5E20;
+      transform: translateY(-1px);
+    }
+
+    .btn-deny {
+      background: #C62828;
+      color: var(--white);
+    }
+
+    .btn-deny:hover {
+      background: #8E0000;
+      transform: translateY(-1px);
+    }
+
+    /* Customers List */
+    #customers-list {
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+
+    #customers-list .empty-state {
+      padding: 48px 24px;
+    }
+
+    .admin-customer-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid #F0F0F0;
+      transition: background 0.2s;
+    }
+
+    .admin-customer-card:last-child {
+      border-bottom: none;
+    }
+
+    .admin-customer-card:hover {
+      background: #FAFAFA;
+    }
+
+    .customer-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .customer-name {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      text-transform: uppercase;
+      color: var(--steel);
+      letter-spacing: 0.5px;
+    }
+
+    .customer-email {
+      font-size: 0.85rem;
+      color: #777;
+    }
+
+    .customer-phone {
+      font-size: 0.85rem;
+      color: #999;
+    }
+
+    /* Access Denied */
+    .access-denied {
+      text-align: center;
+      padding: 80px 24px;
+      background: var(--gray-bg);
+      min-height: 50vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .access-denied-icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+      color: var(--red);
+    }
+
+    .access-denied h2 {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .access-denied p {
+      color: #555;
+      font-size: 1.1rem;
+      margin-bottom: 24px;
+      max-width: 480px;
+    }
+
+    /* Loading state */
+    .admin-loading {
+      text-align: center;
+      padding: 80px 24px;
+      min-height: 50vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .admin-loading p {
+      font-size: 1.1rem;
+      color: #555;
+    }
+
+    /* Status badges (reuse from dashboard) */
+    .status-approved {
+      background: #E8F5E9;
+      color: #2E7D32;
+    }
+
+    .status-denied {
+      background: #FFEBEE;
+      color: #C62828;
+    }
+
+    /* ==========================================
+       ADMIN RESPONSIVE
+       ========================================== */
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .stat-number {
+        font-size: 1.8rem;
+      }
+
+      .stat-label {
+        font-size: 0.7rem;
+      }
+
+      .filter-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .filter-tab {
+        padding: 12px 16px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+      }
+
+      .admin-appt-card {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .appt-actions {
+        width: 100%;
+      }
+
+      .appt-actions .btn-approve,
+      .appt-actions .btn-deny {
+        flex: 1;
+        text-align: center;
+      }
+
+      .admin-customer-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .admin-section h2 {
+        font-size: 1.3rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .stat-card {
+        padding: 16px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="nav-logo">
+        <img src="assets/logo.png" alt="Boris Enterprises Auto Repair Shop in East Jordan, MI">
+      </a>
+      <ul class="nav-links">
+        <li><a href="https://www.facebook.com/aaronsrepairshop" target="_blank" rel="noopener noreferrer" class="nav-facebook" aria-label="Facebook"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+        <li><a href="admin.html" class="nav-active">Admin</a></li>
+        <li id="nav-auth-item"><a href="login.html">Login</a></li>
+        <li><a href="tel:2316750723" class="btn btn-primary nav-cta">CALL 231-675-0723</a></li>
+      </ul>
+      <button class="nav-toggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-hero">
+      <h1>ADMIN DASHBOARD</h1>
+    </div>
+
+    <!-- Loading State -->
+    <div class="admin-loading" id="adminLoading">
+      <p>Verifying admin access...</p>
+    </div>
+
+    <!-- Access Denied (hidden by default) -->
+    <div class="access-denied" id="access-denied" style="display: none;">
+      <div class="access-denied-icon">&#9888;</div>
+      <h2>ACCESS DENIED</h2>
+      <p>You do not have permission to view this page. This area is restricted to administrators only.</p>
+      <a href="index.html" class="btn btn-primary">BACK TO HOME</a>
+    </div>
+
+    <!-- Admin Content (hidden until admin verified) -->
+    <div id="admin-content" style="display: none;">
+
+      <!-- Stats Bar -->
+      <section class="admin-stats">
+        <div class="container">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-number" id="stat-total">0</div>
+              <div class="stat-label">Total Appointments</div>
+            </div>
+            <div class="stat-card stat-pending">
+              <div class="stat-number" id="stat-pending">0</div>
+              <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card stat-approved">
+              <div class="stat-number" id="stat-approved">0</div>
+              <div class="stat-label">Approved</div>
+            </div>
+            <div class="stat-card stat-denied">
+              <div class="stat-number" id="stat-denied">0</div>
+              <div class="stat-label">Denied</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Filter Tabs -->
+      <div class="admin-filters">
+        <div class="container">
+          <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="all">All</button>
+            <button class="filter-tab" data-filter="pending">Pending</button>
+            <button class="filter-tab" data-filter="approved">Approved</button>
+            <button class="filter-tab" data-filter="denied">Denied</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appointments Section -->
+      <section class="admin-section">
+        <div class="container">
+
+          <div class="admin-panel">
+            <h2>APPOINTMENTS</h2>
+            <div id="appointments-list">
+              <p class="empty-state">Loading appointments...</p>
+            </div>
+          </div>
+
+          <!-- Customers Section -->
+          <div class="admin-panel">
+            <h2>CUSTOMERS</h2>
+            <div id="customers-list">
+              <p class="empty-state">Loading customers...</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p class="footer-brand">BORIS ENTERPRISES</p>
+      <p class="footer-address">9890 Whitfield Rd, East Jordan, MI 49727</p>
+      <p class="footer-phone"><a href="tel:2316750723">231-675-0723</a></p>
+      <div class="footer-social">
+        <a href="https://www.facebook.com/aaronsrepairshop" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+      </div>
+      <p class="footer-copy">&copy; 2026 Boris Enterprises. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin.js"></script>
+
+</body>
+</html>
