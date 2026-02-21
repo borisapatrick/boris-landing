@@ -1,9 +1,12 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can read/write their own profile
+    // Users can read/write their own profile (with basic validation)
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.name is string
+        && request.resource.data.email is string;
       allow read: if request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
 
       // Users can manage their own vehicles
@@ -15,10 +18,40 @@ service cloud.firestore {
 
     // Appointments - users can create and read their own, admins can read/update/create/delete all
     match /appointments/{appointmentId} {
-      allow create: if request.auth != null && (request.resource.data.userId == request.auth.uid || exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+      allow create: if request.auth != null && (
+        (request.resource.data.userId == request.auth.uid
+          && request.resource.data.status == 'pending'
+          && request.resource.data.keys().hasAll(['userId', 'userName', 'vehicleYear', 'vehicleMake', 'vehicleModel', 'status'])
+          && request.resource.data.userId is string
+          && request.resource.data.userName is string
+          && request.resource.data.status is string)
+        || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
       allow read: if request.auth != null && (resource.data.userId == request.auth.uid || exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
-      allow update: if request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+      allow update: if request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && (request.resource.data.status is string)
+        && (request.resource.data.status in ['pending', 'approved', 'denied']);
       allow delete: if request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Guest appointments - unauthenticated users can create, admins can manage
+    match /guest_appointments/{docId} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Mail collection - only admins can create (used by Firebase Trigger Email extension)
+    match /mail/{mailId} {
+      allow create: if request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // SMS collection - only admins can create (currently disabled but added preemptively)
+    match /sms/{smsId} {
+      allow create: if request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
     // Admins collection - users can only check their own admin status

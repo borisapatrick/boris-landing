@@ -504,7 +504,7 @@
 
     function escapeAttr(text) {
       if (!text) return '';
-      return text.replace(/'/g, "\\'").replace(/"/g, '\\"');
+      return String(text).replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\\/g, '\\\\');
     }
   </script>
 

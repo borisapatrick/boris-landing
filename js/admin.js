@@ -14,7 +14,7 @@
     if (!text) return '';
     var div = document.createElement('div');
     div.appendChild(document.createTextNode(text));
-    return div.innerHTML;
+    return div.innerHTML.replace(/'/g, '&#39;');
   }
 
   function formatTimestamp(timestamp) {
