@@ -132,9 +132,18 @@
             // User is a new signup who hasn't verified their email
             if (isVerifyEmailPage()) {
               // Already on verify-email page — do nothing, let them stay
+              console.log('[AuthState] On verify-email page, unverified user — staying.');
+              return;
+            }
+            // If a signup action is in progress, do NOT redirect yet — let the
+            // signup handler finish sending the verification email first.
+            // The signup handler will redirect to verify-email.html itself.
+            if (window._authActionInProgress) {
+              console.log('[AuthState] Email not verified, but _authActionInProgress is true — skipping redirect (signup handler will redirect after sending verification email).');
               return;
             }
             // On any other page, redirect to verify-email
+            console.log('[AuthState] Email not verified, redirecting to verify-email.html.');
             window.location.href = 'verify-email.html';
             return;
           }
@@ -287,12 +296,15 @@
 
   // --- Signup ---
   window.handleSignup = function(email, password, name, phone, smsConsent) {
+    console.log('[Signup] Starting signup for:', email);
     window._authActionInProgress = true;
     return auth.createUserWithEmailAndPassword(email, password)
       .then(function(userCredential) {
         var user = userCredential.user;
+        console.log('[Signup] User created in Firebase Auth. UID:', user.uid);
         // Update display name
         return user.updateProfile({ displayName: name }).then(function() {
+          console.log('[Signup] Display name updated.');
           // Save profile to Firestore with emailVerified: false (new signup requiring verification)
           return db.collection('users').doc(user.uid).set({
             name: name,
@@ -303,14 +315,19 @@
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
         }).then(function() {
+          console.log('[Signup] Firestore user doc saved. Sending verification email...');
           // Send verification email
           return user.sendEmailVerification();
+        }).then(function() {
+          console.log('[Signup] Verification email sent successfully.');
         });
       })
       .then(function() {
+        console.log('[Signup] Signup flow complete. Clearing _authActionInProgress.');
         window._authActionInProgress = false;
       })
       .catch(function(error) {
+        console.error('[Signup] Error during signup:', error.code, error.message);
         window._authActionInProgress = false;
         throw error;
       });

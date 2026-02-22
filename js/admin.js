@@ -1141,6 +1141,9 @@
     var container = document.getElementById('customers-list');
     if (!container) return;
 
+    var currentUser = auth.currentUser;
+    var currentUid = currentUser ? currentUser.uid : '';
+
     db.collection('users')
       .get()
       .then(function(snapshot) {
@@ -1152,9 +1155,11 @@
         var html = '';
         snapshot.forEach(function(doc) {
           var c = doc.data();
+          var userId = doc.id;
           var memberSince = formatDateShort(c.createdAt);
+          var isSelf = userId === currentUid;
 
-          html += '<div class="admin-customer-card">';
+          html += '<div class="admin-customer-card" id="customer-' + escapeHtml(userId) + '">';
           html += '  <div class="customer-info">';
           html += '    <span class="customer-name">' + escapeHtml(c.name || 'Unknown') + '</span>';
           html += '    <span class="customer-email">' + escapeHtml(c.email || '') + '</span>';
@@ -1162,8 +1167,13 @@
             html += '    <span class="customer-phone">' + escapeHtml(c.phone) + '</span>';
           }
           html += '  </div>';
-          html += '  <div class="customer-meta" style="text-align: right; font-size: 0.8rem; color: #999;">';
-          html += '    Member since ' + escapeHtml(memberSince);
+          html += '  <div class="customer-actions" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">';
+          html += '    <div class="customer-meta" style="text-align: right; font-size: 0.8rem; color: #999;">';
+          html += '      Member since ' + escapeHtml(memberSince);
+          html += '    </div>';
+          if (!isSelf) {
+            html += '    <button class="btn-delete" onclick="deleteCustomer(\'' + escapeHtml(userId) + '\')">Delete</button>';
+          }
           html += '  </div>';
           html += '</div>';
         });
@@ -1174,5 +1184,43 @@
         container.innerHTML = '<p class="empty-state">Error loading customers. Please try again.</p>';
       });
   }
+
+  // --- Delete Customer ---
+  window.deleteCustomer = function(userId) {
+    if (!confirm('Are you sure you want to delete this customer? This cannot be undone.')) {
+      return;
+    }
+
+    // First, delete all vehicles in the subcollection
+    db.collection('users').doc(userId).collection('vehicles').get()
+      .then(function(vehicleSnapshot) {
+        var deletePromises = [];
+        vehicleSnapshot.forEach(function(vehicleDoc) {
+          deletePromises.push(vehicleDoc.ref.delete());
+        });
+        return Promise.all(deletePromises);
+      })
+      .then(function() {
+        // Then delete the user document itself
+        return db.collection('users').doc(userId).delete();
+      })
+      .then(function() {
+        // Remove the customer card from the DOM
+        var card = document.getElementById('customer-' + userId);
+        if (card) {
+          card.remove();
+        }
+
+        // If no customers left, show empty state
+        var container = document.getElementById('customers-list');
+        if (container && !container.querySelector('.admin-customer-card')) {
+          container.innerHTML = '<p class="empty-state">No customers yet.</p>';
+        }
+      })
+      .catch(function(error) {
+        console.error('Error deleting customer:', error);
+        alert('Error deleting customer. Please try again.');
+      });
+  };
 
 })();
