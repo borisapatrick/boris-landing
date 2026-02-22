@@ -1127,6 +1127,8 @@ section {
     flex-direction: column;
     padding: 16px 0;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-height: calc(100vh - 50px);
+    overflow-y: auto;
   }
 
   .nav-links.active {
@@ -1180,11 +1182,37 @@ section {
     display: none;
   }
 
+  .nav-cta {
+    display: block !important;
+    margin: 8px 24px !important;
+    padding: 12px 18px !important;
+    text-align: center;
+    border-radius: 4px;
+    font-size: 0.95rem !important;
+  }
+
   .nav-appt-cta {
     display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
     margin: 8px 24px !important;
     text-align: center;
     padding: 12px 18px !important;
+    background: var(--red) !important;
+    color: var(--white) !important;
+    border: 2px solid var(--red) !important;
+    border-radius: 4px;
+    font-size: 0.95rem !important;
+    letter-spacing: 1px;
+  }
+
+  .nav-appt-cta:hover {
+    background: var(--dark-red) !important;
+    border-color: var(--dark-red) !important;
+    color: var(--white) !important;
   }
 
   .hero-subtitle {
