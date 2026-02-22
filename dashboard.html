@@ -154,12 +154,12 @@
                       <label for="profileEmail">Email</label>
                       <input type="email" id="profileEmail" disabled>
                     </div>
-                  </div>
-                  <div class="form-group profile-checkbox-group">
-                    <label class="checkbox-label" for="profileSmsConsent">
-                      <input type="checkbox" id="profileSmsConsent" disabled>
-                      <span>Opt out of communications (SMS &amp; email)</span>
-                    </label>
+                    <div class="form-group profile-checkbox-group">
+                      <label class="checkbox-label" for="profileSmsConsent">
+                        <input type="checkbox" id="profileSmsConsent" disabled>
+                        <span>Opt out of communications (SMS &amp; email)</span>
+                      </label>
+                    </div>
                   </div>
                   <div class="profile-actions" id="profileActions" style="display: none;">
                     <button type="submit" class="btn btn-primary" id="profileSaveBtn">SAVE CHANGES</button>
@@ -167,6 +167,17 @@
                   </div>
                   <div class="profile-message" id="profileMessage"></div>
                 </form>
+                <div class="reset-password-section" id="resetPasswordSection">
+                  <div class="reset-password-divider"></div>
+                  <div class="reset-password-row">
+                    <div class="reset-password-info">
+                      <h4>Password</h4>
+                      <p id="resetPasswordDesc">Change your account password via email.</p>
+                    </div>
+                    <button class="btn btn-primary reset-password-btn" id="resetPasswordBtn" onclick="handleResetPassword()">RESET PASSWORD</button>
+                  </div>
+                  <div class="reset-password-message" id="resetPasswordMessage"></div>
+                </div>
               </div>
             </div>
 
@@ -261,6 +272,9 @@
         document.getElementById('welcomeName').textContent = 'Welcome!';
         document.getElementById('profileEmail').value = user.email;
       });
+
+      // Setup reset password section (detect Google sign-in)
+      setupResetPasswordSection(user);
 
       // Load vehicles
       loadVehicles(user.uid);
@@ -538,6 +552,77 @@
 
     function hideProfileMessage() {
       document.getElementById('profileMessage').style.display = 'none';
+    }
+
+    // --- Reset Password ---
+    function setupResetPasswordSection(user) {
+      var btn = document.getElementById('resetPasswordBtn');
+      var desc = document.getElementById('resetPasswordDesc');
+      var section = document.getElementById('resetPasswordSection');
+      if (!btn || !section) return;
+
+      // Check if the user signed in with Google (no password to reset)
+      var isGoogleUser = false;
+      if (user.providerData && user.providerData.length > 0) {
+        for (var i = 0; i < user.providerData.length; i++) {
+          if (user.providerData[i].providerId === 'google.com') {
+            isGoogleUser = true;
+            break;
+          }
+        }
+      }
+
+      // Check if the user also has a password provider
+      var hasPasswordProvider = false;
+      if (user.providerData && user.providerData.length > 0) {
+        for (var j = 0; j < user.providerData.length; j++) {
+          if (user.providerData[j].providerId === 'password') {
+            hasPasswordProvider = true;
+            break;
+          }
+        }
+      }
+
+      if (isGoogleUser && !hasPasswordProvider) {
+        btn.style.display = 'none';
+        desc.textContent = 'You signed in with Google \u2014 no password to reset.';
+        desc.className = 'reset-password-google-note';
+      }
+    }
+
+    function handleResetPassword() {
+      var user = auth.currentUser;
+      if (!user || !user.email) return;
+
+      var btn = document.getElementById('resetPasswordBtn');
+      var msg = document.getElementById('resetPasswordMessage');
+
+      btn.disabled = true;
+      btn.textContent = 'SENDING...';
+
+      firebase.auth().sendPasswordResetEmail(user.email)
+        .then(function() {
+          msg.textContent = 'Password reset email sent! Check your inbox.';
+          msg.className = 'reset-password-message reset-password-success';
+          msg.style.display = 'block';
+          btn.textContent = 'EMAIL SENT';
+          setTimeout(function() {
+            msg.style.display = 'none';
+            btn.disabled = false;
+            btn.textContent = 'RESET PASSWORD';
+          }, 5000);
+        })
+        .catch(function(error) {
+          console.error('Error sending password reset email:', error);
+          msg.textContent = 'Failed to send reset email. Please try again.';
+          msg.className = 'reset-password-message reset-password-error';
+          msg.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'RESET PASSWORD';
+          setTimeout(function() {
+            msg.style.display = 'none';
+          }, 5000);
+        });
     }
 
     // --- Utility ---

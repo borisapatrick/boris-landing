@@ -47,13 +47,7 @@
 
     <section class="auth-section">
       <div class="container">
-        <div class="auth-card" style="position:relative;">
-          <!-- Coming Soon Overlay -->
-          <div id="comingSoonOverlay" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:inherit;text-align:center;padding:2rem;">
-            <span style="font-family:'Oswald',sans-serif;font-size:2.5rem;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:4px;">COMING SOON</span>
-            <span style="font-family:'Open Sans',sans-serif;font-size:1rem;color:rgba(255,255,255,0.85);margin-top:12px;">Account login and registration will be available soon.</span>
-            <a href="index.html" style="display:inline-block;margin-top:24px;padding:10px 28px;font-family:'Oswald',sans-serif;font-size:0.95rem;font-weight:700;color:#fff;background:#e63946;text-decoration:none;text-transform:uppercase;letter-spacing:2px;border-radius:4px;">BACK TO HOME</a>
-          </div>
+        <div class="auth-card">
           <!-- Tab Toggle -->
           <div class="auth-tabs">
             <button class="auth-tab active" id="loginTab" onclick="showLoginForm()">Login</button>
@@ -73,6 +67,14 @@
             </svg>
             <span id="google-btn-text">Sign in with Google</span>
           </button>
+
+          <!-- Google Sign-In Consent (TOS + Communications) -->
+          <div class="form-group consent-group" id="googleConsentGroup" style="display: none;">
+            <label class="consent-label">
+              <input type="checkbox" id="google-consent-checkbox" name="google_sms_consent" value="yes" required>
+              <span>I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>, and consent to receive communications from Boris Enterprises.<span class="required-star">*</span> <a href="#" class="consent-details-link" onclick="event.preventDefault(); document.getElementById('signupConsentModal').style.display='flex';">Details</a></span>
+            </label>
+          </div>
 
           <!-- Divider -->
           <div class="auth-divider">
@@ -125,7 +127,7 @@
             <div class="form-group consent-group">
               <label class="consent-label">
                 <input type="checkbox" id="signupSmsConsent" name="sms_consent" value="yes" required>
-                <span>I agree to receive communications from Boris Enterprises.<span class="required-star">*</span> <a href="#" class="consent-details-link" onclick="event.preventDefault(); document.getElementById('signupConsentModal').style.display='flex';">Details</a></span>
+                <span>I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>, and consent to receive communications from Boris Enterprises.<span class="required-star">*</span> <a href="#" class="consent-details-link" onclick="event.preventDefault(); document.getElementById('signupConsentModal').style.display='flex';">Details</a></span>
               </label>
             </div>
             <button type="submit" class="btn btn-primary btn-full" id="signupBtn">CREATE ACCOUNT</button>
@@ -180,6 +182,166 @@
     </div>
   </div>
 
+  <!-- New User Google Sign-In Consent Modal -->
+  <div id="googleNewUserConsentModal" class="google-consent-overlay">
+    <div class="google-consent-card">
+      <button type="button" class="google-consent-close" id="googleConsentCloseBtn">&times;</button>
+      <h3 class="google-consent-title">ALMOST THERE</h3>
+      <p class="google-consent-subtitle">It looks like this is your first time here. Before we create your account, please review the following:</p>
+
+      <div class="google-consent-checkboxes">
+        <label class="google-consent-label google-consent-label--required">
+          <input type="checkbox" id="googleConsentCombined">
+          <span>I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>, and consent to receive communications from Boris Enterprises.<span class="required-star">*</span> <a href="#" class="consent-details-link" onclick="event.preventDefault(); document.getElementById('signupConsentModal').style.display='flex';">Details</a></span>
+        </label>
+      </div>
+
+      <p class="google-consent-error" id="googleConsentError" style="display: none;">You must agree to the Terms of Service, Privacy Policy, and communications consent to continue.</p>
+
+      <div class="google-consent-actions">
+        <button type="button" class="btn btn-primary google-consent-agree" id="googleConsentAgreeBtn">CREATE MY ACCOUNT</button>
+        <button type="button" class="google-consent-cancel" id="googleConsentCancelBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* --- New User Google Sign-In Consent Modal --- */
+    .google-consent-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+    }
+    .google-consent-card {
+      background: #1a1a1a;
+      border-radius: 10px;
+      padding: 36px 32px 28px;
+      max-width: 480px;
+      width: 90%;
+      position: relative;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+      border: 1px solid #333;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .google-consent-close {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 1.6rem;
+      cursor: pointer;
+      color: #888;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    .google-consent-close:hover {
+      color: var(--red);
+    }
+    .google-consent-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.4rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--white);
+      margin-bottom: 12px;
+    }
+    .google-consent-subtitle {
+      font-size: 0.92rem;
+      line-height: 1.6;
+      color: #bbb;
+      margin-bottom: 24px;
+    }
+    .google-consent-checkboxes {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .google-consent-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.9rem;
+      color: #ccc;
+      cursor: pointer;
+      line-height: 1.5;
+    }
+    .google-consent-label input[type="checkbox"] {
+      margin-top: 3px;
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      accent-color: var(--red);
+      cursor: pointer;
+    }
+    .google-consent-label a {
+      color: var(--red);
+      text-decoration: underline;
+    }
+    .google-consent-label a:hover {
+      color: #ff4444;
+    }
+    .google-consent-label .required-star {
+      color: var(--red);
+    }
+    .google-consent-error {
+      color: #ff4444;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      padding: 8px 12px;
+      background: rgba(255, 68, 68, 0.1);
+      border-radius: 4px;
+      border: 1px solid rgba(255, 68, 68, 0.3);
+    }
+    .google-consent-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .google-consent-agree {
+      width: 100%;
+      padding: 14px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 1px;
+    }
+    .google-consent-cancel {
+      width: 100%;
+      padding: 10px;
+      background: none;
+      border: 1px solid #555;
+      border-radius: 4px;
+      color: #999;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .google-consent-cancel:hover {
+      border-color: #999;
+      color: var(--white);
+    }
+
+    @media (max-width: 768px) {
+      .google-consent-card {
+        padding: 28px 20px 24px;
+        width: 95%;
+      }
+    }
+  </style>
+
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -219,6 +381,7 @@
       document.getElementById('loginForm').style.display = 'block';
       document.getElementById('signupWrapper').style.display = 'none';
       document.getElementById('forgotForm').style.display = 'none';
+      document.getElementById('googleConsentGroup').style.display = 'none';
       document.getElementById('loginTab').classList.add('active');
       document.getElementById('signupTab').classList.remove('active');
       document.getElementById('google-btn-text').textContent = 'Sign in with Google';
@@ -233,13 +396,14 @@
       document.getElementById('loginForm').style.display = 'none';
       document.getElementById('signupWrapper').style.display = 'block';
       document.getElementById('forgotForm').style.display = 'none';
+      document.getElementById('googleConsentGroup').style.display = 'block';
       document.getElementById('loginTab').classList.remove('active');
       document.getElementById('signupTab').classList.add('active');
       document.getElementById('google-btn-text').textContent = 'Sign up with Google';
       var googleBtn = document.querySelector('.btn-google');
-      googleBtn.disabled = true;
-      googleBtn.style.opacity = '0.4';
-      googleBtn.style.pointerEvents = 'none';
+      googleBtn.disabled = false;
+      googleBtn.style.opacity = '1';
+      googleBtn.style.pointerEvents = 'auto';
       clearMessage();
     }
 
@@ -248,6 +412,7 @@
       document.getElementById('loginForm').style.display = 'none';
       document.getElementById('signupWrapper').style.display = 'none';
       document.getElementById('forgotForm').style.display = 'block';
+      document.getElementById('googleConsentGroup').style.display = 'none';
       document.getElementById('loginTab').classList.remove('active');
       document.getElementById('signupTab').classList.remove('active');
       var googleBtn = document.querySelector('.btn-google');
@@ -265,22 +430,143 @@
     function handleGoogleSignIn() {
       clearMessage();
       var isSignupTab = document.getElementById('signupTab').classList.contains('active');
+      var googleConsent = document.getElementById('google-consent-checkbox');
 
       if (isSignupTab) {
-        var consent = document.getElementById('signupSmsConsent');
-        if (!consent || !consent.checked) {
-          showMessage('Please agree to receive communications to sign up.', true);
+        // On the signup tab, accept consent from either checkbox
+        var signupConsent = document.getElementById('signupSmsConsent');
+        var hasConsent = (googleConsent && googleConsent.checked) || (signupConsent && signupConsent.checked);
+        if (!hasConsent) {
+          showMessage('Please agree to the Terms of Service, Privacy Policy, and communications consent to sign up.', true);
           return;
         }
         // Set global flag so auth.js can read it for new Google users
         window._signupConsent = true;
+        // On signup tab consent is already given — clear the new-user handler
+        // so auth.js creates the doc immediately
+        window._onNewGoogleUser = null;
       } else {
-        // Login tab — no consent needed, clear any stale flag
+        // Login tab — register the new-user handler so auth.js shows
+        // the consent modal instead of creating the doc immediately
         window._signupConsent = false;
+        window._onNewGoogleUser = showGoogleConsentModal;
       }
 
       signInWithGoogle();
     }
+
+    // --- New User Google Consent Modal Logic ---
+
+    // Reference to the Firebase Auth user while the modal is open
+    var _pendingGoogleUser = null;
+
+    function showGoogleConsentModal(user) {
+      _pendingGoogleUser = user;
+      // Reset modal state
+      document.getElementById('googleConsentCombined').checked = false;
+      document.getElementById('googleConsentError').style.display = 'none';
+      // Reset agree button in case it was left in loading state
+      var agreeBtn = document.getElementById('googleConsentAgreeBtn');
+      agreeBtn.disabled = false;
+      agreeBtn.textContent = 'CREATE MY ACCOUNT';
+      // Show modal
+      document.getElementById('googleNewUserConsentModal').style.display = 'flex';
+    }
+
+    function hideGoogleConsentModal() {
+      document.getElementById('googleNewUserConsentModal').style.display = 'none';
+    }
+
+    function cancelGoogleConsent() {
+      hideGoogleConsentModal();
+      var user = _pendingGoogleUser;
+      _pendingGoogleUser = null;
+      window._authActionInProgress = false;
+      if (user) {
+        deleteAuthUserAndSignOut(user).then(function() {
+          console.log('[GoogleConsent] User declined — auth user deleted and signed out.');
+          showMessage('Account creation cancelled.', true);
+        });
+      }
+    }
+
+    function agreeGoogleConsent() {
+      var combinedChecked = document.getElementById('googleConsentCombined').checked;
+      var errorEl = document.getElementById('googleConsentError');
+
+      if (!combinedChecked) {
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      errorEl.style.display = 'none';
+      var user = _pendingGoogleUser;
+      _pendingGoogleUser = null;
+
+      if (!user) {
+        hideGoogleConsentModal();
+        showMessage('Something went wrong. Please try again.', true);
+        window._authActionInProgress = false;
+        return;
+      }
+
+      // Disable the button to prevent double-clicks
+      var agreeBtn = document.getElementById('googleConsentAgreeBtn');
+      agreeBtn.disabled = true;
+      agreeBtn.textContent = 'PLEASE WAIT...';
+
+      var userData = {
+        name: user.displayName || '',
+        email: user.email || '',
+        phone: '',
+        smsConsent: true,
+        emailVerified: true,
+        tosAccepted: true,
+        tosAcceptedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      createGoogleUserDoc(user.uid, userData).then(function() {
+        console.log('[GoogleConsent] User doc created after consent. Redirecting...');
+        hideGoogleConsentModal();
+        window._authActionInProgress = false;
+        window.location.href = 'dashboard.html';
+      }).catch(function(writeErr) {
+        console.error('[GoogleConsent] Could not create user doc:', writeErr);
+        hideGoogleConsentModal();
+        window._authActionInProgress = false;
+        showMessage('Account created but profile save failed. Please update your profile on the dashboard.', true);
+        setTimeout(function() { window.location.href = 'dashboard.html'; }, 2000);
+      });
+    }
+
+    // Attach modal event listeners once DOM is ready
+    (function initGoogleConsentModal() {
+      var agreeBtn = document.getElementById('googleConsentAgreeBtn');
+      var cancelBtn = document.getElementById('googleConsentCancelBtn');
+      var closeBtn = document.getElementById('googleConsentCloseBtn');
+      var overlay = document.getElementById('googleNewUserConsentModal');
+
+      if (agreeBtn) agreeBtn.addEventListener('click', agreeGoogleConsent);
+      if (cancelBtn) cancelBtn.addEventListener('click', cancelGoogleConsent);
+      if (closeBtn) closeBtn.addEventListener('click', cancelGoogleConsent);
+
+      // Clicking the overlay backdrop cancels
+      if (overlay) {
+        overlay.addEventListener('click', function(e) {
+          if (e.target === overlay) {
+            cancelGoogleConsent();
+          }
+        });
+      }
+
+      // Handle browser back / popstate — clean up if modal is open
+      window.addEventListener('popstate', function() {
+        if (_pendingGoogleUser) {
+          cancelGoogleConsent();
+        }
+      });
+    })();
 
     function getFirebaseErrorMessage(code) {
       switch (code) {
@@ -379,7 +665,7 @@
       var smsConsent = document.getElementById('signupSmsConsent').checked;
 
       if (!smsConsent) {
-        showMessage('Please agree to receive communications to create an account.', true);
+        showMessage('Please agree to the Terms of Service, Privacy Policy, and communications consent to create an account.', true);
         return;
       }
 

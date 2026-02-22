@@ -271,7 +271,7 @@
 
         var adminA = document.createElement('a');
         adminA.href = 'admin.html';
-        adminA.textContent = 'Admin';
+        adminA.textContent = 'Dashboard';
         if (isAdminPage()) {
           adminA.classList.add('nav-active');
         }
@@ -314,6 +314,8 @@
             phone: phone,
             email: email,
             smsConsent: !!smsConsent,
+            tosAccepted: true,
+            tosAcceptedAt: firebase.firestore.FieldValue.serverTimestamp(),
             emailVerified: false,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
@@ -358,8 +360,24 @@
   };
 
   // --- Google Sign-In ---
+  // Helper: delete a Firebase Auth user and sign out. Used when a new Google user
+  // declines consent — removes the auth account so they are not left in a half-created state.
+  window.deleteAuthUserAndSignOut = function(user) {
+    console.log('[Google Sign-In] Deleting auth user and signing out. UID:', user.uid);
+    return user.delete().then(function() {
+      console.log('[Google Sign-In] Auth user deleted.');
+      return auth.signOut();
+    }).catch(function(err) {
+      console.error('[Google Sign-In] Error deleting auth user:', err);
+      // Still try to sign out even if delete fails
+      return auth.signOut();
+    });
+  };
+
   // Helper: create the Firestore user doc, with one automatic retry on failure.
   // Returns a promise that resolves when the doc is written (or rejects after retry).
+  // Exposed on window so login page consent modal can call it.
+  window.createGoogleUserDoc = createUserDoc;
   function createUserDoc(uid, userData) {
     console.log('[Google Sign-In] Writing user doc for UID:', uid);
     return db.collection('users').doc(uid).set(userData)
@@ -408,14 +426,28 @@
           console.log('[Google Sign-In] Doc exists?', doc.exists);
 
           if (!doc.exists) {
-            // New user — create their Firestore profile
+            // New user detected.
+            // If a new-user consent handler is registered (login page sets this),
+            // delegate to it so the user can accept TOS before the doc is created.
+            if (typeof window._onNewGoogleUser === 'function') {
+              console.log('[Google Sign-In] New user — delegating to _onNewGoogleUser handler.');
+              window._onNewGoogleUser(user);
+              return; // The handler is responsible for creating the doc or cleaning up
+            }
+
+            // Fallback: no handler (e.g. on signup tab where consent was already given).
+            // Create their Firestore profile immediately.
             // Google accounts have pre-verified emails, so set emailVerified: true
-            var smsConsent = !!window._signupConsent;
+            // Check the global flag first, then fall back to the Google consent checkbox
+            var googleConsentEl = document.getElementById('google-consent-checkbox');
+            var smsConsent = !!window._signupConsent || !!(googleConsentEl && googleConsentEl.checked);
             var userData = {
               name: user.displayName || '',
               email: user.email || '',
               phone: '',
               smsConsent: smsConsent,
+              tosAccepted: true,
+              tosAcceptedAt: firebase.firestore.FieldValue.serverTimestamp(),
               emailVerified: true,
               createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };

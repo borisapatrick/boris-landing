@@ -1753,6 +1753,38 @@ section {
   gap: 20px;
 }
 
+.profile-checkbox-group {
+  text-align: left;
+  margin-top: 0;
+  margin-bottom: 0;
+  grid-column: 1;
+}
+
+.profile-checkbox-group .checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  color: var(--steel);
+}
+
+.profile-checkbox-group .checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--red);
+  cursor: pointer;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.profile-checkbox-group .checkbox-label span {
+  white-space: nowrap;
+}
+
 .profile-actions {
   display: flex;
   gap: 12px;
@@ -1787,6 +1819,92 @@ section {
   background: #F0FFF4;
   color: #2E7D32;
   border: 1px solid #C8E6C9;
+}
+
+/* --- Reset Password Section (Dashboard Profile) --- */
+.reset-password-section {
+  padding: 0 0 4px;
+}
+
+.reset-password-divider {
+  height: 1px;
+  background: #E8E8E8;
+  margin: 20px 0;
+}
+
+.reset-password-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.reset-password-info h4 {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  color: var(--steel);
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.reset-password-info p {
+  font-size: 0.9rem;
+  color: #777;
+  line-height: 1.4;
+}
+
+.reset-password-google-note {
+  font-size: 0.9rem;
+  color: #888;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.reset-password-btn {
+  padding: 10px 24px !important;
+  font-size: 0.85rem !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.reset-password-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.reset-password-message {
+  display: none;
+  margin-top: 12px;
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.reset-password-success {
+  background: #F0FFF4;
+  color: #2E7D32;
+  border: 1px solid #C8E6C9;
+}
+
+.reset-password-error {
+  background: #FFF0F0;
+  color: #CC1A1A;
+  border: 1px solid #FFCCCC;
+}
+
+@media (max-width: 768px) {
+  .reset-password-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .reset-password-btn {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 /* --- Communications Consent --- */
