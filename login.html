@@ -46,7 +46,13 @@
 
     <section class="auth-section">
       <div class="container">
-        <div class="auth-card">
+        <div class="auth-card" style="position:relative;">
+          <!-- Coming Soon Overlay -->
+          <div id="comingSoonOverlay" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:inherit;text-align:center;padding:2rem;">
+            <span style="font-family:'Oswald',sans-serif;font-size:2.5rem;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:4px;">COMING SOON</span>
+            <span style="font-family:'Open Sans',sans-serif;font-size:1rem;color:rgba(255,255,255,0.85);margin-top:12px;">Account login and registration will be available soon.</span>
+            <a href="index.html" style="display:inline-block;margin-top:24px;padding:10px 28px;font-family:'Oswald',sans-serif;font-size:0.95rem;font-weight:700;color:#fff;background:#e63946;text-decoration:none;text-transform:uppercase;letter-spacing:2px;border-radius:4px;">BACK TO HOME</a>
+          </div>
           <!-- Tab Toggle -->
           <div class="auth-tabs">
             <button class="auth-tab active" id="loginTab" onclick="showLoginForm()">Login</button>
@@ -89,7 +95,8 @@
           </form>
 
           <!-- Sign Up Form -->
-          <form class="auth-form" id="signupForm" style="display: none;" onsubmit="submitSignup(event)">
+          <div id="signupWrapper" style="display: none; position: relative;">
+          <form class="auth-form" id="signupForm" onsubmit="submitSignup(event)">
             <div class="form-group">
               <label for="signupName">Name<span class="required-star">*</span></label>
               <input type="text" id="signupName" required placeholder="Your full name">
@@ -118,6 +125,7 @@
             </div>
             <button type="submit" class="btn btn-primary btn-full" id="signupBtn">CREATE ACCOUNT</button>
           </form>
+          </div>
 
           <!-- Forgot Password Form -->
           <form class="auth-form" id="forgotForm" style="display: none;" onsubmit="submitForgotPassword(event)">
@@ -193,31 +201,43 @@
 
     function showLoginForm() {
       document.getElementById('loginForm').style.display = 'block';
-      document.getElementById('signupForm').style.display = 'none';
+      document.getElementById('signupWrapper').style.display = 'none';
       document.getElementById('forgotForm').style.display = 'none';
       document.getElementById('loginTab').classList.add('active');
       document.getElementById('signupTab').classList.remove('active');
       document.getElementById('google-btn-text').textContent = 'Sign in with Google';
+      var googleBtn = document.querySelector('.btn-google');
+      googleBtn.disabled = false;
+      googleBtn.style.opacity = '1';
+      googleBtn.style.pointerEvents = 'auto';
       clearMessage();
     }
 
     function showSignupForm() {
       document.getElementById('loginForm').style.display = 'none';
-      document.getElementById('signupForm').style.display = 'block';
+      document.getElementById('signupWrapper').style.display = 'block';
       document.getElementById('forgotForm').style.display = 'none';
       document.getElementById('loginTab').classList.remove('active');
       document.getElementById('signupTab').classList.add('active');
       document.getElementById('google-btn-text').textContent = 'Sign up with Google';
+      var googleBtn = document.querySelector('.btn-google');
+      googleBtn.disabled = true;
+      googleBtn.style.opacity = '0.4';
+      googleBtn.style.pointerEvents = 'none';
       clearMessage();
     }
 
     function showForgotPassword(e) {
       e.preventDefault();
       document.getElementById('loginForm').style.display = 'none';
-      document.getElementById('signupForm').style.display = 'none';
+      document.getElementById('signupWrapper').style.display = 'none';
       document.getElementById('forgotForm').style.display = 'block';
       document.getElementById('loginTab').classList.remove('active');
       document.getElementById('signupTab').classList.remove('active');
+      var googleBtn = document.querySelector('.btn-google');
+      googleBtn.disabled = false;
+      googleBtn.style.opacity = '1';
+      googleBtn.style.pointerEvents = 'auto';
       clearMessage();
     }
 
