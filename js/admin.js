@@ -235,7 +235,7 @@
     html += '  <div class="appt-actions" id="appt-actions-' + escapeHtml(id) + '">';
     if (status === 'pending') {
       html += '    <button class="btn-approve" onclick="showApprovalForm(\'' + escapeHtml(id) + '\')">Approve</button>';
-      html += '    <button class="btn-deny" onclick="denyAppointment(\'' + escapeHtml(id) + '\')">Deny</button>';
+      html += '    <button class="btn-deny" onclick="showDenyConfirm(\'' + escapeHtml(id) + '\')">Deny</button>';
     }
     html += '    <button class="btn-edit" onclick="showEditForm(\'' + escapeHtml(id) + '\')">Edit</button>';
     html += '    <button class="btn-delete" onclick="deleteAppointment(\'' + escapeHtml(id) + '\')">Delete</button>';
@@ -350,6 +350,132 @@
     document.body.removeChild(ta);
   }
 
+  // --- Custom Calendar for Admin Forms ---
+  // Mirrors the custom calendar used on the appointment request form in main.js
+  function initAdminCalendar(dateInputId) {
+    var dateInput = document.getElementById(dateInputId);
+    if (!dateInput) return;
+
+    var calendarPopup = dateInput.parentElement.querySelector('.calendar-popup');
+    if (!calendarPopup) return;
+
+    var currentMonth = new Date();
+    var selectedDate = null;
+    var today = new Date();
+    today.setHours(0,0,0,0);
+
+    // If input already has a display value, try to parse the underlying date
+    if (dateInput.dataset.dateValue) {
+      var parts = dateInput.dataset.dateValue.split('-');
+      if (parts.length === 3) {
+        selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        selectedDate.setHours(0,0,0,0);
+        currentMonth = new Date(selectedDate);
+      }
+    }
+
+    function renderCalendar() {
+      var year = currentMonth.getFullYear();
+      var month = currentMonth.getMonth();
+      var firstDay = new Date(year, month, 1).getDay();
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+      var html = '<div class="calendar-header">';
+      html += '<button type="button" class="calendar-prev">&lsaquo;</button>';
+      html += '<span class="calendar-month">' + monthNames[month] + ' ' + year + '</span>';
+      html += '<button type="button" class="calendar-next">&rsaquo;</button>';
+      html += '</div>';
+      html += '<div class="calendar-grid">';
+
+      var dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      for (var dl = 0; dl < dayLabels.length; dl++) {
+        html += '<span class="day-label">' + dayLabels[dl] + '</span>';
+      }
+
+      for (var i = 0; i < firstDay; i++) {
+        html += '<span class="day empty"></span>';
+      }
+
+      for (var d = 1; d <= daysInMonth; d++) {
+        var date = new Date(year, month, d);
+        date.setHours(0,0,0,0);
+        var dayOfWeek = date.getDay();
+        var isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+        var isPast = date < today;
+        var isDisabled = isWeekend || isPast;
+        var isToday = date.getTime() === today.getTime();
+        var isSelected = selectedDate && date.getTime() === selectedDate.getTime();
+
+        var classes = 'day';
+        if (isDisabled) classes += ' disabled';
+        if (isToday) classes += ' today';
+        if (isSelected) classes += ' selected';
+
+        html += '<span class="' + classes + '" data-date="' + year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0') + '">' + d + '</span>';
+      }
+
+      html += '</div>';
+      calendarPopup.innerHTML = html;
+
+      // Navigation
+      calendarPopup.querySelector('.calendar-prev').addEventListener('click', function(e) {
+        e.stopPropagation();
+        currentMonth.setMonth(currentMonth.getMonth() - 1);
+        renderCalendar();
+      });
+      calendarPopup.querySelector('.calendar-next').addEventListener('click', function(e) {
+        e.stopPropagation();
+        currentMonth.setMonth(currentMonth.getMonth() + 1);
+        renderCalendar();
+      });
+
+      // Day selection
+      var dayEls = calendarPopup.querySelectorAll('.day:not(.disabled):not(.empty)');
+      for (var j = 0; j < dayEls.length; j++) {
+        (function(el) {
+          el.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var p = el.dataset.date.split('-');
+            selectedDate = new Date(p[0], p[1]-1, p[2]);
+            selectedDate.setHours(0,0,0,0);
+            var options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+            dateInput.value = selectedDate.toLocaleDateString('en-US', options);
+            // Store the YYYY-MM-DD value for form submission
+            dateInput.dataset.dateValue = el.dataset.date;
+            calendarPopup.classList.remove('active');
+          });
+        })(dayEls[j]);
+      }
+    }
+
+    // Toggle calendar on input click
+    dateInput.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (dateInput.disabled) return;
+      currentMonth = selectedDate ? new Date(selectedDate) : new Date();
+      renderCalendar();
+      calendarPopup.classList.toggle('active');
+    });
+
+    // Close when clicking outside
+    var closeHandler = function(e) {
+      if (!calendarPopup.contains(e.target) && e.target !== dateInput) {
+        calendarPopup.classList.remove('active');
+      }
+    };
+    document.addEventListener('click', closeHandler);
+
+    calendarPopup.addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+
+    // Store cleanup reference
+    dateInput._calendarCleanup = function() {
+      document.removeEventListener('click', closeHandler);
+    };
+  }
+
   // --- Show Inline Approval Form (Drop-off Scheduling) ---
   window.showApprovalForm = function(appointmentId) {
     // Find the appointment data for pre-filling
@@ -366,10 +492,16 @@
 
     // Remove any existing approval form on this card
     var existingForm = card.querySelector('.approval-form');
-    if (existingForm) existingForm.remove();
+    if (existingForm) {
+      // Clean up calendar event listener
+      var oldInput = existingForm.querySelector('.date-input');
+      if (oldInput && oldInput._calendarCleanup) oldInput._calendarCleanup();
+      existingForm.remove();
+    }
 
-    // Pre-fill date from customer's preferred date (try to parse into YYYY-MM-DD for date input)
+    // Pre-fill date from customer's preferred date
     var prefillDate = '';
+    var prefillDisplay = '';
     if (appointment && appointment.preferredDate) {
       var parsed = new Date(appointment.preferredDate);
       if (!isNaN(parsed.getTime())) {
@@ -377,29 +509,41 @@
         var mm = String(parsed.getMonth() + 1).padStart(2, '0');
         var dd = String(parsed.getDate()).padStart(2, '0');
         prefillDate = yyyy + '-' + mm + '-' + dd;
+        prefillDisplay = parsed.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
       }
     }
+
+    var eid = escapeHtml(appointmentId);
 
     var formHtml = '<div class="approval-form-title">Schedule Drop-off</div>'
       + '<div class="approval-form-row">'
       + '  <div class="approval-form-field">'
-      + '    <label for="dropoff-date-' + escapeHtml(appointmentId) + '">Drop-off Date</label>'
-      + '    <input type="date" id="dropoff-date-' + escapeHtml(appointmentId) + '" value="' + prefillDate + '">'
+      + '    <label for="dropoff-date-' + eid + '">Drop-off Date</label>'
+      + '    <div class="date-picker-wrapper">'
+      + '      <input type="text" id="dropoff-date-' + eid + '" class="date-input" placeholder="Select a date" readonly'
+      + (prefillDisplay ? ' value="' + escapeHtml(prefillDisplay) + '"' : '')
+      + (prefillDate ? ' data-date-value="' + prefillDate + '"' : '')
+      + '>'
+      + '      <div class="calendar-popup" id="calendarPopup-' + eid + '"></div>'
+      + '    </div>'
       + '  </div>'
       + '  <div class="approval-form-field">'
-      + '    <label for="dropoff-time-' + escapeHtml(appointmentId) + '">Drop-off Time</label>'
-      + '    <input type="time" id="dropoff-time-' + escapeHtml(appointmentId) + '" value="09:00">'
+      + '    <label for="dropoff-time-' + eid + '">Drop-off Time</label>'
+      + '    <input type="time" id="dropoff-time-' + eid + '" value="09:00">'
       + '  </div>'
       + '</div>'
       + '<div class="approval-form-actions">'
-      + '  <button class="btn-confirm-approve" onclick="confirmApproval(\'' + escapeHtml(appointmentId) + '\')">Confirm Approval</button>'
-      + '  <button class="approval-form-cancel" onclick="cancelApprovalForm(\'' + escapeHtml(appointmentId) + '\')">Cancel</button>'
+      + '  <button class="btn-confirm-approve" onclick="confirmApproval(\'' + eid + '\')">Confirm Approval</button>'
+      + '  <button class="approval-form-cancel" onclick="cancelApprovalForm(\'' + eid + '\')">Cancel</button>'
       + '</div>';
 
     var formEl = document.createElement('div');
     formEl.className = 'approval-form';
     formEl.innerHTML = formHtml;
     card.appendChild(formEl);
+
+    // Initialize the custom calendar on the new date input
+    initAdminCalendar('dropoff-date-' + appointmentId);
   };
 
   // --- Cancel / Dismiss Approval Form ---
@@ -407,7 +551,12 @@
     var card = document.getElementById('appt-' + appointmentId);
     if (!card) return;
     var form = card.querySelector('.approval-form');
-    if (form) form.remove();
+    if (form) {
+      // Clean up calendar event listener
+      var dateInput = form.querySelector('.date-input');
+      if (dateInput && dateInput._calendarCleanup) dateInput._calendarCleanup();
+      form.remove();
+    }
   };
 
   // --- Confirm Approval with Drop-off Date/Time ---
@@ -415,7 +564,8 @@
     var dateInput = document.getElementById('dropoff-date-' + appointmentId);
     var timeInput = document.getElementById('dropoff-time-' + appointmentId);
 
-    var dropoffDate = dateInput ? dateInput.value : '';
+    // The custom calendar stores YYYY-MM-DD in data-date-value; the display value is the readable string
+    var dropoffDate = dateInput ? (dateInput.dataset.dateValue || dateInput.value) : '';
     var dropoffTime = timeInput ? timeInput.value : '';
 
     // Format the time for display (e.g., "9:00 AM")
@@ -551,6 +701,33 @@
     });
   };
 
+  // --- Show Inline Deny Confirmation ---
+  window.showDenyConfirm = function(appointmentId) {
+    var card = document.getElementById('appt-' + appointmentId);
+    if (!card) return;
+
+    // Remove any existing deny confirm on this card
+    var existing = card.querySelector('.deny-confirm');
+    if (existing) existing.remove();
+
+    var confirmHtml = '<span class="deny-confirm-text">Are you sure?</span>'
+      + '<button class="btn-confirm-deny" onclick="denyAppointment(\'' + escapeHtml(appointmentId) + '\')">Confirm Deny</button>'
+      + '<button class="deny-confirm-cancel" onclick="cancelDenyConfirm(\'' + escapeHtml(appointmentId) + '\')">Cancel</button>';
+
+    var confirmEl = document.createElement('div');
+    confirmEl.className = 'deny-confirm';
+    confirmEl.innerHTML = confirmHtml;
+    card.appendChild(confirmEl);
+  };
+
+  // --- Cancel / Dismiss Deny Confirmation ---
+  window.cancelDenyConfirm = function(appointmentId) {
+    var card = document.getElementById('appt-' + appointmentId);
+    if (!card) return;
+    var confirm = card.querySelector('.deny-confirm');
+    if (confirm) confirm.remove();
+  };
+
   // --- Deny Appointment ---
   window.denyAppointment = function(appointmentId) {
     db.collection('appointments').doc(appointmentId).update({
@@ -625,7 +802,15 @@
 
     // Remove inline approval form if present
     var approvalForm = card.querySelector('.approval-form');
-    if (approvalForm) approvalForm.remove();
+    if (approvalForm) {
+      var calDateInput = approvalForm.querySelector('.date-input');
+      if (calDateInput && calDateInput._calendarCleanup) calDateInput._calendarCleanup();
+      approvalForm.remove();
+    }
+
+    // Remove inline deny confirmation if present
+    var denyConfirm = card.querySelector('.deny-confirm');
+    if (denyConfirm) denyConfirm.remove();
 
     // Update the status badge
     var statusBadge = card.querySelector('.appointment-status');

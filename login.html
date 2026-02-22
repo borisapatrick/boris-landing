@@ -349,7 +349,7 @@
 
       handleSignup(email, password, name, phone, smsConsent)
         .then(function() {
-          window.location.href = 'dashboard.html';
+          window.location.href = 'verify-email.html';
         })
         .catch(function(error) {
           console.error('Signup error:', error.code, error.message, error);

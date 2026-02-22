@@ -33,11 +33,69 @@
     });
   }
 
+  // --- Email Verification Check ---
+  // Checks whether a logged-in user needs email verification.
+  // Returns a promise that resolves to true if the user is blocked (unverified new signup),
+  // or false if they should be allowed through.
+  // Also handles auto-updating Firestore when the user has verified via the email link.
+  function checkEmailVerification(user, isAdmin) {
+    // Admins bypass verification
+    if (isAdmin) return Promise.resolve(false);
+
+    return db.collection('users').doc(user.uid).get().then(function(doc) {
+      if (!doc.exists) {
+        // No Firestore doc — allow through (edge case)
+        return false;
+      }
+
+      var data = doc.data();
+
+      // If the Firestore doc does NOT have an emailVerified field at all,
+      // this is an existing user from before the verification feature — let them through
+      if (typeof data.emailVerified === 'undefined') {
+        return false;
+      }
+
+      // If Firestore says emailVerified: true, user is verified — let them through
+      if (data.emailVerified === true) {
+        return false;
+      }
+
+      // Firestore says emailVerified: false — check Firebase Auth's source of truth
+      if (user.emailVerified === true) {
+        // User clicked the verification link — update Firestore and let them through
+        return db.collection('users').doc(user.uid).update({
+          emailVerified: true
+        }).then(function() {
+          console.log('[EmailVerification] Firestore updated: emailVerified set to true');
+          return false;
+        }).catch(function(err) {
+          console.error('[EmailVerification] Error updating Firestore emailVerified:', err);
+          // Still let them through since Firebase Auth confirms verification
+          return false;
+        });
+      }
+
+      // User has not verified their email — they are blocked
+      return true;
+    }).catch(function(err) {
+      console.error('[EmailVerification] Error checking verification status:', err);
+      // On error, don't block — fail open to avoid locking out users
+      return false;
+    });
+  }
+
   // --- Auth State Listener & Navbar Update ---
   auth.onAuthStateChanged(function(user) {
     // Check admin status first, then update navbar and handle page logic
     checkAdminStatus(user).then(function(isAdmin) {
       updateNavbar(user, isAdmin);
+
+      // If on verify-email page and not logged in, redirect to login
+      if (!user && isVerifyEmailPage()) {
+        window.location.href = 'login.html';
+        return;
+      }
 
       // If on dashboard page and not logged in, redirect to login
       if (!user && isDashboardPage()) {
@@ -67,26 +125,50 @@
         window.initAdminDashboard(user);
       }
 
-      // If on login page and already logged in, redirect to dashboard
-      // But skip if a signup/login action is in progress (let the action handle its own redirect)
-      if (user && isLoginPage()) {
-        if (window._authActionInProgress) {
-          console.log('[AuthState] On login page, user signed in, but _authActionInProgress is true — skipping redirect (sign-in handler will redirect).');
-        } else {
-          console.log('[AuthState] On login page, user signed in, no action in progress — redirecting to dashboard.');
-          window.location.href = 'dashboard.html';
-        }
-        return;
-      }
+      // If user is logged in, check email verification before allowing access
+      if (user) {
+        checkEmailVerification(user, isAdmin).then(function(isBlocked) {
+          if (isBlocked) {
+            // User is a new signup who hasn't verified their email
+            if (isVerifyEmailPage()) {
+              // Already on verify-email page — do nothing, let them stay
+              return;
+            }
+            // On any other page, redirect to verify-email
+            window.location.href = 'verify-email.html';
+            return;
+          }
 
-      // If on dashboard page and logged in, initialize dashboard
-      if (user && isDashboardPage() && typeof initDashboard === 'function') {
-        initDashboard(user);
-      }
+          // User is verified (or existing user or admin) — proceed with normal page logic
 
-      // If on index page and logged in, pre-fill contact form
-      if (user && isIndexPage()) {
-        prefillContactForm(user);
+          // If on verify-email page but already verified, redirect to dashboard
+          if (isVerifyEmailPage()) {
+            window.location.href = 'dashboard.html';
+            return;
+          }
+
+          // If on login page and already logged in, redirect to dashboard
+          // But skip if a signup/login action is in progress (let the action handle its own redirect)
+          if (isLoginPage()) {
+            if (window._authActionInProgress) {
+              console.log('[AuthState] On login page, user signed in, but _authActionInProgress is true — skipping redirect (sign-in handler will redirect).');
+            } else {
+              console.log('[AuthState] On login page, user signed in, no action in progress — redirecting to dashboard.');
+              window.location.href = 'dashboard.html';
+            }
+            return;
+          }
+
+          // If on dashboard page and logged in, initialize dashboard
+          if (isDashboardPage() && typeof initDashboard === 'function') {
+            initDashboard(user);
+          }
+
+          // If on index page and logged in, pre-fill contact form
+          if (isIndexPage()) {
+            prefillContactForm(user);
+          }
+        });
       }
     });
   });
@@ -101,6 +183,10 @@
 
   function isAdminPage() {
     return window.location.pathname.endsWith('admin.html');
+  }
+
+  function isVerifyEmailPage() {
+    return window.location.pathname.endsWith('verify-email.html');
   }
 
   function isIndexPage() {
@@ -207,14 +293,18 @@
         var user = userCredential.user;
         // Update display name
         return user.updateProfile({ displayName: name }).then(function() {
-          // Save profile to Firestore
+          // Save profile to Firestore with emailVerified: false (new signup requiring verification)
           return db.collection('users').doc(user.uid).set({
             name: name,
             phone: phone,
             email: email,
             smsConsent: !!smsConsent,
+            emailVerified: false,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
+        }).then(function() {
+          // Send verification email
+          return user.sendEmailVerification();
         });
       })
       .then(function() {
@@ -299,12 +389,14 @@
 
           if (!doc.exists) {
             // New user — create their Firestore profile
+            // Google accounts have pre-verified emails, so set emailVerified: true
             var smsConsent = !!window._signupConsent;
             var userData = {
               name: user.displayName || '',
               email: user.email || '',
               phone: '',
               smsConsent: smsConsent,
+              emailVerified: true,
               createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             console.log('[Google Sign-In] New user detected. Creating doc...');

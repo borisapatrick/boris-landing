@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Verify your email address for your Boris Enterprises account.">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Verify Email | Boris Enterprises</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/favicon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="nav-logo">
+        <img src="assets/logo.png" alt="Boris Enterprises Auto Repair Shop in East Jordan, MI">
+      </a>
+      <ul class="nav-links">
+        <li><a href="https://www.facebook.com/aaronsrepairshop" target="_blank" rel="noopener noreferrer" class="nav-facebook" aria-label="Facebook"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+        <li><a href="tel:2316750723" class="btn btn-primary nav-cta">CALL 231-675-0723</a></li>
+      </ul>
+      <button class="nav-toggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-hero">
+      <h1>CHECK YOUR EMAIL</h1>
+    </div>
+
+    <section class="auth-section">
+      <div class="container">
+        <div class="auth-card verify-email-card">
+
+          <!-- Status Message -->
+          <div class="auth-message" id="verifyMessage"></div>
+
+          <div class="verify-email-content">
+            <div class="verify-email-icon">&#9993;</div>
+            <p class="verify-email-text">We've sent a verification link to your email address. Please check your inbox and click the link to verify your account.</p>
+            <p class="verify-email-hint">Don't see it? Check your spam or junk folder.</p>
+          </div>
+
+          <div class="verify-email-actions">
+            <button type="button" class="btn btn-primary btn-full" id="resendBtn" onclick="resendVerification()">RESEND VERIFICATION EMAIL</button>
+            <button type="button" class="btn btn-outline btn-full" id="continueBtn" onclick="checkVerification()">I'VE VERIFIED &mdash; CONTINUE</button>
+          </div>
+
+          <p class="verify-email-signout">
+            <a href="#" onclick="doSignOut(event)">Sign Out</a>
+          </p>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p class="footer-brand">BORIS ENTERPRISES</p>
+      <p class="footer-address">9890 Whitfield Rd, East Jordan, MI 49727</p>
+      <p class="footer-phone"><a href="tel:2316750723">231-675-0723</a></p>
+      <div class="footer-social">
+        <a href="https://www.facebook.com/aaronsrepairshop" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+      </div>
+      <p class="footer-copy">&copy; 2026 Boris Enterprises. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+
+  <script>
+    // --- Verify Email Page Logic ---
+
+    function showVerifyMessage(text, isError) {
+      var msg = document.getElementById('verifyMessage');
+      msg.textContent = text;
+      msg.className = 'auth-message ' + (isError ? 'auth-error' : 'auth-success');
+      msg.style.display = 'block';
+    }
+
+    function clearVerifyMessage() {
+      var msg = document.getElementById('verifyMessage');
+      msg.style.display = 'none';
+      msg.textContent = '';
+    }
+
+    function resendVerification() {
+      clearVerifyMessage();
+      var user = auth.currentUser;
+      if (!user) {
+        showVerifyMessage('You are not signed in. Please sign in again.', true);
+        return;
+      }
+
+      var btn = document.getElementById('resendBtn');
+      btn.disabled = true;
+      btn.textContent = 'SENDING...';
+
+      user.sendEmailVerification()
+        .then(function() {
+          showVerifyMessage('Verification email sent! Check your inbox.', false);
+          btn.disabled = false;
+          btn.textContent = 'RESEND VERIFICATION EMAIL';
+        })
+        .catch(function(error) {
+          console.error('Error sending verification email:', error);
+          if (error.code === 'auth/too-many-requests') {
+            showVerifyMessage('Too many requests. Please wait a few minutes before trying again.', true);
+          } else {
+            showVerifyMessage('Error sending verification email. Please try again.', true);
+          }
+          btn.disabled = false;
+          btn.textContent = 'RESEND VERIFICATION EMAIL';
+        });
+    }
+
+    function checkVerification() {
+      clearVerifyMessage();
+      var user = auth.currentUser;
+      if (!user) {
+        showVerifyMessage('You are not signed in. Please sign in again.', true);
+        return;
+      }
+
+      var btn = document.getElementById('continueBtn');
+      btn.disabled = true;
+      btn.textContent = 'CHECKING...';
+
+      user.reload()
+        .then(function() {
+          // After reload, re-read the user object
+          var refreshedUser = auth.currentUser;
+          if (refreshedUser && refreshedUser.emailVerified) {
+            // Update Firestore to mark as verified
+            return db.collection('users').doc(refreshedUser.uid).update({
+              emailVerified: true
+            }).then(function() {
+              showVerifyMessage('Email verified! Redirecting to your dashboard...', false);
+              setTimeout(function() {
+                window.location.href = 'dashboard.html';
+              }, 1000);
+            });
+          } else {
+            showVerifyMessage('Email not yet verified. Please click the link in your email and try again.', true);
+            btn.disabled = false;
+            btn.textContent = 'I\'VE VERIFIED \u2014 CONTINUE';
+          }
+        })
+        .catch(function(error) {
+          console.error('Error checking verification:', error);
+          showVerifyMessage('Error checking verification status. Please try again.', true);
+          btn.disabled = false;
+          btn.textContent = 'I\'VE VERIFIED \u2014 CONTINUE';
+        });
+    }
+
+    function doSignOut(e) {
+      e.preventDefault();
+      handleLogout();
+    }
+  </script>
+
+</body>
+</html>
