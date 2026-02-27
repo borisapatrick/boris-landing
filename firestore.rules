@@ -33,7 +33,7 @@ service cloud.firestore {
       allow update: if request.auth != null
         && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
         && (request.resource.data.status is string)
-        && (request.resource.data.status in ['pending', 'approved', 'denied']);
+        && (request.resource.data.status in ['pending', 'approved', 'denied', 'ready']);
       allow delete: if request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
