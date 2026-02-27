@@ -40,7 +40,8 @@ body {
 /* --- Headings --- */
 h1,
 h2 {
-  font-family: Impact, 'Arial Black', sans-serif;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
   text-transform: uppercase;
   color: var(--red);
   letter-spacing: 1px;
@@ -651,7 +652,8 @@ section {
 }
 
 .cta-section .cta-phone {
-  font-family: Impact, 'Arial Black', sans-serif;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
   font-size: 2rem;
   color: var(--red);
   display: block;
@@ -1032,7 +1034,8 @@ section {
 
 .contact-phone {
   font-size: 2.2rem;
-  font-family: Impact, 'Arial Black', sans-serif;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
   color: var(--red);
   display: block;
   margin-bottom: 16px;
@@ -1060,11 +1063,13 @@ section {
 }
 
 .footer-brand {
-  font-family: Impact, 'Arial Black', sans-serif;
-  font-size: 1.4rem;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   margin-bottom: 8px;
+  opacity: 0.85;
 }
 
 .footer-phone a {
@@ -1943,6 +1948,49 @@ section {
 
 .consent-details-link:hover {
   color: var(--dark-red);
+}
+
+/* Multi-checkbox consent groups */
+.consent-group--multi {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.consent-group--multi .consent-heading {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--steel);
+  margin: 0 0 4px 0;
+}
+
+.consent-group--multi .consent-label {
+  margin: 0;
+}
+
+.consent-note {
+  font-size: 0.8rem;
+  color: var(--silver);
+  margin: 2px 0 0 0;
+  font-style: italic;
+}
+
+/* Dashboard profile consent toggles */
+.profile-consent-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-consent-toggles .consent-heading {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--silver);
+  margin: 8px 0 0 0;
 }
 
 .consent-modal-overlay {

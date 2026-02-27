@@ -154,10 +154,19 @@
                       <label for="profileEmail">Email</label>
                       <input type="email" id="profileEmail" disabled autocomplete="email">
                     </div>
-                    <div class="form-group profile-checkbox-group">
+                    <div class="form-group profile-checkbox-group profile-consent-toggles">
+                      <p class="consent-heading">Communication Preferences</p>
                       <label class="checkbox-label" for="profileSmsConsent">
                         <input type="checkbox" id="profileSmsConsent" disabled>
-                        <span>Opt out of communications (SMS &amp; email)</span>
+                        <span>SMS appointment reminders and updates</span>
+                      </label>
+                      <label class="checkbox-label" for="profileEmailConsent">
+                        <input type="checkbox" id="profileEmailConsent" disabled>
+                        <span>Email appointment reminders and updates</span>
+                      </label>
+                      <label class="checkbox-label" for="profileMarketingConsent">
+                        <input type="checkbox" id="profileMarketingConsent" disabled>
+                        <span>Promotional offers and service specials</span>
                       </label>
                     </div>
                   </div>
@@ -262,7 +271,9 @@
 
           document.getElementById('profilePhone').value = currentUserData.phone ? formatPhone(currentUserData.phone) : '';
           document.getElementById('profileEmail').value = currentUserData.email || user.email;
-          document.getElementById('profileSmsConsent').checked = !currentUserData.smsConsent;
+          document.getElementById('profileSmsConsent').checked = !!currentUserData.smsConsent;
+          document.getElementById('profileEmailConsent').checked = !!currentUserData.emailConsent;
+          document.getElementById('profileMarketingConsent').checked = !!currentUserData.marketingConsent;
         } else {
           document.getElementById('welcomeName').textContent = 'Welcome!';
           document.getElementById('profileEmail').value = user.email;
@@ -462,6 +473,8 @@
       document.getElementById('profileLastName').disabled = false;
       document.getElementById('profilePhone').disabled = false;
       document.getElementById('profileSmsConsent').disabled = false;
+      document.getElementById('profileEmailConsent').disabled = false;
+      document.getElementById('profileMarketingConsent').disabled = false;
       // Email cannot be changed easily through Firestore, keep disabled
       document.getElementById('profileActions').style.display = 'flex';
       document.getElementById('editProfileBtn').style.display = 'none';
@@ -482,10 +495,14 @@
       document.getElementById('profileLastName').value = profileOriginalData.lastName || '';
       document.getElementById('profilePhone').value = profileOriginalData.phone || '';
       document.getElementById('profileSmsConsent').checked = !!profileOriginalData.smsConsent;
+      document.getElementById('profileEmailConsent').checked = !!profileOriginalData.emailConsent;
+      document.getElementById('profileMarketingConsent').checked = !!profileOriginalData.marketingConsent;
       document.getElementById('profileFirstName').disabled = true;
       document.getElementById('profileLastName').disabled = true;
       document.getElementById('profilePhone').disabled = true;
       document.getElementById('profileSmsConsent').disabled = true;
+      document.getElementById('profileEmailConsent').disabled = true;
+      document.getElementById('profileMarketingConsent').disabled = true;
       document.getElementById('profileActions').style.display = 'none';
       document.getElementById('editProfileBtn').style.display = 'inline-flex';
       hideProfileMessage();
@@ -499,7 +516,9 @@
       var firstName = document.getElementById('profileFirstName').value.trim();
       var lastName = document.getElementById('profileLastName').value.trim();
       var phone = document.getElementById('profilePhone').value.trim();
-      var smsConsent = !document.getElementById('profileSmsConsent').checked;
+      var smsConsent = document.getElementById('profileSmsConsent').checked;
+      var emailConsent = document.getElementById('profileEmailConsent').checked;
+      var marketingConsent = document.getElementById('profileMarketingConsent').checked;
       var btn = document.getElementById('profileSaveBtn');
 
       if (!firstName) {
@@ -513,10 +532,16 @@
       btn.textContent = 'SAVING...';
 
       // Update Firestore
+      var now = firebase.firestore.FieldValue.serverTimestamp();
       db.collection('users').doc(user.uid).update({
         name: name,
         phone: phone,
-        smsConsent: smsConsent
+        smsConsent: smsConsent,
+        smsConsentAt: now,
+        emailConsent: emailConsent,
+        emailConsentAt: now,
+        marketingConsent: marketingConsent,
+        marketingConsentAt: now
       }).then(function() {
         // Update display name
         return user.updateProfile({ displayName: name });
@@ -529,6 +554,8 @@
         document.getElementById('profileLastName').disabled = true;
         document.getElementById('profilePhone').disabled = true;
         document.getElementById('profileSmsConsent').disabled = true;
+        document.getElementById('profileEmailConsent').disabled = true;
+        document.getElementById('profileMarketingConsent').disabled = true;
         document.getElementById('profileActions').style.display = 'none';
         document.getElementById('editProfileBtn').style.display = 'inline-flex';
       }).catch(function(error) {

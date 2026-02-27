@@ -47,11 +47,24 @@
 
     <section class="auth-section">
       <div class="container">
-        <div class="auth-card">
+        <div class="auth-card" style="position: relative;">
+          <!-- Account system unavailable overlay -->
+          <div id="loginOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(245, 245, 245, 0.92); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 32px; border-radius: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 20px; opacity: 0.6;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <h2 style="font-family: 'Oswald', sans-serif; font-size: 1.3rem; text-transform: uppercase; letter-spacing: 2px; color: #333; margin: 0 0 12px 0;">Account System Coming Soon</h2>
+            <p style="color: #666; font-size: 0.95rem; line-height: 1.6; margin: 0 0 24px 0;">We're still setting up our online account system. You can still request an appointment or give us a call.</p>
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 260px;">
+              <a href="index.html#contact" style="display: block; background: var(--primary); color: var(--white); font-family: 'Oswald', sans-serif; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; padding: 12px 32px; border-radius: 4px; text-decoration: none; text-align: center;">Request Appointment</a>
+              <a href="tel:2316750723" style="display: block; background: transparent; color: var(--primary); font-family: 'Oswald', sans-serif; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 32px; border-radius: 4px; text-decoration: none; text-align: center; border: 1px solid var(--primary);">Call 231-675-0723</a>
+            </div>
+            <button onclick="document.getElementById('loginOverlay').style.display='none';" style="background: none; border: none; color: #bbb; font-size: 0.75rem; margin-top: 24px; cursor: pointer; padding: 4px 8px;">Staff Access</button>
+          </div>
+
           <!-- Tab Toggle -->
           <div class="auth-tabs">
             <button class="auth-tab active" id="loginTab" onclick="showLoginForm()">Login</button>
-            <button class="auth-tab" id="signupTab" onclick="showSignupForm()">Sign Up</button>
+            <!-- Signup temporarily disabled -->
+            <button class="auth-tab" id="signupTab" onclick="showSignupForm()" style="display: none;">Sign Up</button>
           </div>
 
           <!-- Error / Success Message -->
@@ -69,10 +82,24 @@
           </button>
 
           <!-- Google Sign-In Consent (TOS + Communications) -->
-          <div class="form-group consent-group" id="googleConsentGroup" style="display: none;">
+          <div class="form-group consent-group consent-group--multi" id="googleConsentGroup" style="display: none;">
+            <p class="consent-heading">Communications Preferences <a href="#" class="consent-details-link" onclick="event.preventDefault(); document.getElementById('signupConsentModal').style.display='flex';">Details</a></p>
             <label class="consent-label">
-              <input type="checkbox" id="google-consent-checkbox" name="google_sms_consent" value="yes" required>
-              <span>I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>, and consent to receive communications from Boris Enterprises.<span class="required-star">*</span> <a href="#" class="consent-details-link" onclick="event.preventDefault(); document.getElementById('signupConsentModal').style.display='flex';">Details</a></span>
+              <input type="checkbox" id="googleTosConsent" name="google_tos_consent" value="yes">
+              <span>I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a><span class="required-star">*</span></span>
+            </label>
+            <label class="consent-label">
+              <input type="checkbox" id="googleSmsConsent" name="google_sms_consent" value="yes">
+              <span>I consent to receive appointment reminders and updates via SMS</span>
+            </label>
+            <label class="consent-label">
+              <input type="checkbox" id="googleEmailConsent" name="google_email_consent" value="yes">
+              <span>I consent to receive appointment reminders and updates via email</span>
+            </label>
+            <p class="consent-note">* At least one communication method (SMS or Email) is required.</p>
+            <label class="consent-label">
+              <input type="checkbox" id="googleMarketingConsent" name="google_marketing_consent" value="yes">
+              <span>I'd like to receive promotional offers and service specials</span>
             </label>
           </div>
 
@@ -124,10 +151,24 @@
               <label for="signupPasswordConfirm">Confirm Password<span class="required-star">*</span></label>
               <input type="password" id="signupPasswordConfirm" required placeholder="Confirm your password" minlength="6" autocomplete="new-password">
             </div>
-            <div class="form-group consent-group">
+            <div class="form-group consent-group consent-group--multi">
+              <p class="consent-heading">Communications Preferences <a href="#" class="consent-details-link" onclick="event.preventDefault(); document.getElementById('signupConsentModal').style.display='flex';">Details</a></p>
               <label class="consent-label">
-                <input type="checkbox" id="signupSmsConsent" name="sms_consent" value="yes" required>
-                <span>I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>, and consent to receive communications from Boris Enterprises.<span class="required-star">*</span> <a href="#" class="consent-details-link" onclick="event.preventDefault(); document.getElementById('signupConsentModal').style.display='flex';">Details</a></span>
+                <input type="checkbox" id="signupTosConsent" name="tos_consent" value="yes">
+                <span>I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a><span class="required-star">*</span></span>
+              </label>
+              <label class="consent-label">
+                <input type="checkbox" id="signupSmsConsent" name="sms_consent" value="yes">
+                <span>I consent to receive appointment reminders and updates via SMS</span>
+              </label>
+              <label class="consent-label">
+                <input type="checkbox" id="signupEmailConsent" name="email_consent" value="yes">
+                <span>I consent to receive appointment reminders and updates via email</span>
+              </label>
+              <p class="consent-note">* At least one communication method (SMS or Email) is required.</p>
+              <label class="consent-label">
+                <input type="checkbox" id="signupMarketingConsent" name="marketing_consent" value="yes">
+                <span>I'd like to receive promotional offers and service specials</span>
               </label>
             </div>
             <button type="submit" class="btn btn-primary btn-full" id="signupBtn">CREATE ACCOUNT</button>
@@ -170,15 +211,11 @@
       <button type="button" class="consent-modal-close" onclick="document.getElementById('signupConsentModal').style.display='none';">&times;</button>
       <h3 class="consent-modal-title">Communications Consent</h3>
       <div class="consent-modal-body">
-        <p>By checking this box, you agree to receive communications from Boris Enterprises, including:</p>
-        <ul>
-          <li>Appointment confirmations, updates, and reminders via SMS and email</li>
-          <li>Service recommendations and follow-ups</li>
-          <li>Promotional offers and seasonal specials</li>
-          <li>Important notices about your vehicle</li>
-        </ul>
+        <p><strong>SMS Reminders</strong> — We'll text you appointment confirmations, reminders, and updates about your vehicle's service status.</p>
+        <p><strong>Email Reminders</strong> — We'll email you appointment confirmations, reminders, and updates about your vehicle's service status.</p>
+        <p><strong>Promotional Offers</strong> (optional) — Occasional service specials, seasonal promotions, and maintenance recommendations.</p>
       </div>
-      <p class="consent-modal-note">Message and data rates may apply for SMS. You can opt out at any time by contacting us at <a href="tel:2316750723">231-675-0723</a> or replying STOP to any text message.</p>
+      <p class="consent-modal-note">Message and data rates may apply for SMS. You can opt out at any time by contacting us at <a href="tel:2316750723">231-675-0723</a> or replying STOP to any text message. You can update your preferences from your account dashboard.</p>
     </div>
   </div>
 
@@ -191,12 +228,25 @@
 
       <div class="google-consent-checkboxes">
         <label class="google-consent-label google-consent-label--required">
-          <input type="checkbox" id="googleConsentCombined">
-          <span>I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>, and consent to receive communications from Boris Enterprises.<span class="required-star">*</span> <a href="#" class="consent-details-link" onclick="event.preventDefault(); document.getElementById('signupConsentModal').style.display='flex';">Details</a></span>
+          <input type="checkbox" id="googleModalTosConsent">
+          <span>I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a><span class="required-star">*</span></span>
+        </label>
+        <label class="google-consent-label">
+          <input type="checkbox" id="googleModalSmsConsent">
+          <span>I consent to receive appointment reminders and updates via SMS</span>
+        </label>
+        <label class="google-consent-label">
+          <input type="checkbox" id="googleModalEmailConsent">
+          <span>I consent to receive appointment reminders and updates via email</span>
+        </label>
+        <p class="consent-note">* At least one communication method (SMS or Email) is required.</p>
+        <label class="google-consent-label">
+          <input type="checkbox" id="googleModalMarketingConsent">
+          <span>I'd like to receive promotional offers and service specials</span>
         </label>
       </div>
 
-      <p class="google-consent-error" id="googleConsentError" style="display: none;">You must agree to the Terms of Service, Privacy Policy, and communications consent to continue.</p>
+      <p class="google-consent-error" id="googleConsentError" style="display: none;">You must agree to the Terms of Service and consent to at least one communication method (SMS or Email) to continue.</p>
 
       <div class="google-consent-actions">
         <button type="button" class="btn btn-primary google-consent-agree" id="googleConsentAgreeBtn">CREATE MY ACCOUNT</button>
@@ -430,26 +480,43 @@
     function handleGoogleSignIn() {
       clearMessage();
       var isSignupTab = document.getElementById('signupTab').classList.contains('active');
-      var googleConsent = document.getElementById('google-consent-checkbox');
 
       if (isSignupTab) {
-        // On the signup tab, accept consent from either checkbox
-        var signupConsent = document.getElementById('signupSmsConsent');
-        var hasConsent = (googleConsent && googleConsent.checked) || (signupConsent && signupConsent.checked);
-        if (!hasConsent) {
-          showMessage('Please agree to the Terms of Service, Privacy Policy, and communications consent to sign up.', true);
+        // On the signup tab, check for consent from either the Google or signup checkboxes
+        var hasTos = (document.getElementById('googleTosConsent') && document.getElementById('googleTosConsent').checked) ||
+                     (document.getElementById('signupTosConsent') && document.getElementById('signupTosConsent').checked);
+        var hasSms = (document.getElementById('googleSmsConsent') && document.getElementById('googleSmsConsent').checked) ||
+                     (document.getElementById('signupSmsConsent') && document.getElementById('signupSmsConsent').checked);
+        var hasEmail = (document.getElementById('googleEmailConsent') && document.getElementById('googleEmailConsent').checked) ||
+                       (document.getElementById('signupEmailConsent') && document.getElementById('signupEmailConsent').checked);
+
+        if (!hasTos) {
+          showMessage('Please agree to the Terms of Service and Privacy Policy to sign up.', true);
           return;
         }
-        // Set global flag so auth.js can read it for new Google users
+        if (!hasSms && !hasEmail) {
+          showMessage('Please consent to at least one communication method (SMS or Email) to sign up.', true);
+          return;
+        }
+
+        // Store consent values for auth.js to use when creating the user doc
+        var hasMarketing = (document.getElementById('googleMarketingConsent') && document.getElementById('googleMarketingConsent').checked) ||
+                           (document.getElementById('signupMarketingConsent') && document.getElementById('signupMarketingConsent').checked);
         window._signupConsent = true;
-        // On signup tab consent is already given — clear the new-user handler
-        // so auth.js creates the doc immediately
+        window._signupConsentValues = { sms: !!hasSms, email: !!hasEmail, marketing: !!hasMarketing };
         window._onNewGoogleUser = null;
       } else {
         // Login tab — register the new-user handler so auth.js shows
         // the consent modal instead of creating the doc immediately
+        // Signup is temporarily disabled — block new Google users
         window._signupConsent = false;
-        window._onNewGoogleUser = showGoogleConsentModal;
+        window._signupConsentValues = null;
+        window._onNewGoogleUser = function(user) {
+          // New user tried to sign in via Google but signup is disabled
+          deleteAuthUserAndSignOut(user).then(function() {
+            showMessage('New account registration is currently unavailable. Please call us at 231-675-0723 to schedule an appointment.', true);
+          });
+        };
       }
 
       signInWithGoogle();
@@ -462,8 +529,11 @@
 
     function showGoogleConsentModal(user) {
       _pendingGoogleUser = user;
-      // Reset modal state
-      document.getElementById('googleConsentCombined').checked = false;
+      // Reset modal state — all checkboxes unchecked
+      document.getElementById('googleModalTosConsent').checked = false;
+      document.getElementById('googleModalSmsConsent').checked = false;
+      document.getElementById('googleModalEmailConsent').checked = false;
+      document.getElementById('googleModalMarketingConsent').checked = false;
       document.getElementById('googleConsentError').style.display = 'none';
       // Reset agree button in case it was left in loading state
       var agreeBtn = document.getElementById('googleConsentAgreeBtn');
@@ -491,10 +561,13 @@
     }
 
     function agreeGoogleConsent() {
-      var combinedChecked = document.getElementById('googleConsentCombined').checked;
+      var tosChecked = document.getElementById('googleModalTosConsent').checked;
+      var smsChecked = document.getElementById('googleModalSmsConsent').checked;
+      var emailChecked = document.getElementById('googleModalEmailConsent').checked;
+      var marketingChecked = document.getElementById('googleModalMarketingConsent').checked;
       var errorEl = document.getElementById('googleConsentError');
 
-      if (!combinedChecked) {
+      if (!tosChecked || (!smsChecked && !emailChecked)) {
         errorEl.style.display = 'block';
         return;
       }
@@ -515,15 +588,21 @@
       agreeBtn.disabled = true;
       agreeBtn.textContent = 'PLEASE WAIT...';
 
+      var now = firebase.firestore.FieldValue.serverTimestamp();
       var userData = {
         name: user.displayName || '',
         email: user.email || '',
         phone: '',
-        smsConsent: true,
+        smsConsent: !!smsChecked,
+        smsConsentAt: smsChecked ? now : null,
+        emailConsent: !!emailChecked,
+        emailConsentAt: emailChecked ? now : null,
+        marketingConsent: !!marketingChecked,
+        marketingConsentAt: marketingChecked ? now : null,
         emailVerified: true,
         tosAccepted: true,
-        tosAcceptedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        tosAcceptedAt: now,
+        createdAt: now
       };
 
       createGoogleUserDoc(user.uid, userData).then(function() {
@@ -662,17 +741,24 @@
         return;
       }
 
+      var tosConsent = document.getElementById('signupTosConsent').checked;
       var smsConsent = document.getElementById('signupSmsConsent').checked;
+      var emailConsent = document.getElementById('signupEmailConsent').checked;
+      var marketingConsent = document.getElementById('signupMarketingConsent').checked;
 
-      if (!smsConsent) {
-        showMessage('Please agree to the Terms of Service, Privacy Policy, and communications consent to create an account.', true);
+      if (!tosConsent) {
+        showMessage('Please agree to the Terms of Service and Privacy Policy to create an account.', true);
+        return;
+      }
+      if (!smsConsent && !emailConsent) {
+        showMessage('Please consent to at least one communication method (SMS or Email) to create an account.', true);
         return;
       }
 
       setButtonLoading(btn, true);
 
       console.log('[submitSignup] Calling handleSignup...');
-      handleSignup(email, password, firstName, lastName, phone, smsConsent)
+      handleSignup(email, password, firstName, lastName, phone, smsConsent, emailConsent, marketingConsent)
         .then(function() {
           console.log('[submitSignup] handleSignup resolved — verification email was sent. Redirecting to verify-email.html.');
           window.location.href = 'verify-email.html';

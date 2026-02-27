@@ -35,6 +35,15 @@ const contactForm = document.getElementById('contactForm');
 if (contactForm) {
   var isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
+  // Toggle email required star when email consent checkbox changes
+  var emailConsentCb = document.getElementById('email-consent');
+  var emailRequiredStar = document.getElementById('emailRequiredStar');
+  if (emailConsentCb && emailRequiredStar) {
+    emailConsentCb.addEventListener('change', function() {
+      emailRequiredStar.style.display = this.checked ? 'inline' : 'none';
+    });
+  }
+
   contactForm.addEventListener('submit', async function(e) {
     // ALWAYS prevent native form POST — we handle submission via JS
     e.preventDefault();
@@ -73,23 +82,46 @@ if (contactForm) {
       return;
     }
 
-    // Validate communications consent checkbox
+    // Validate email if email consent is checked
+    var contactEmail = document.getElementById('contact-email');
+    var emailConsentChecked = document.getElementById('email-consent') && document.getElementById('email-consent').checked;
+    if (emailConsentChecked && contactEmail && !contactEmail.value.trim()) {
+      contactEmail.style.borderColor = '#CC1A1A';
+      contactEmail.focus();
+      return;
+    }
+    if (contactEmail && contactEmail.value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail.value.trim())) {
+      contactEmail.style.borderColor = '#CC1A1A';
+      contactEmail.focus();
+      return;
+    }
+
+    // Validate required consent checkboxes (ToS required; at least one of SMS/Email required; Marketing optional)
+    var tosConsent = document.getElementById('tos-consent');
     var smsConsent = document.getElementById('sms-consent');
-    if (smsConsent && !smsConsent.checked) {
-      // Remove any previous consent error message
-      var existingError = document.querySelector('.consent-error');
-      if (existingError) existingError.remove();
-      // Show error message below the consent group
-      var consentGroup = smsConsent.closest('.form-group');
+    var emailConsent = document.getElementById('email-consent');
+    var consentGroup = document.querySelector('.consent-group--multi');
+
+    // Remove any previous consent error messages
+    var existingErrors = document.querySelectorAll('.consent-error');
+    existingErrors.forEach(function(el) { el.remove(); });
+
+    var missingConsents = [];
+    if (tosConsent && !tosConsent.checked) missingConsents.push('Terms of Service and Privacy Policy');
+    var hasSmsOrEmail = (smsConsent && smsConsent.checked) || (emailConsent && emailConsent.checked);
+    if (!hasSmsOrEmail) missingConsents.push('at least one communication method (SMS or Email)');
+
+    if (missingConsents.length > 0) {
       var errorMsg = document.createElement('span');
       errorMsg.className = 'consent-error';
       errorMsg.style.color = '#CC1A1A';
       errorMsg.style.fontSize = '0.85rem';
       errorMsg.style.display = 'block';
       errorMsg.style.marginTop = '4px';
-      errorMsg.textContent = 'Please agree to receive communications to continue.';
-      consentGroup.appendChild(errorMsg);
-      smsConsent.focus();
+      errorMsg.textContent = 'Please agree to the following to continue: ' + missingConsents.join(', ') + '.';
+      if (consentGroup) consentGroup.appendChild(errorMsg);
+      if (tosConsent && !tosConsent.checked) { tosConsent.focus(); }
+      else if (!hasSmsOrEmail && smsConsent) { smsConsent.focus(); }
       return;
     }
 
@@ -98,6 +130,7 @@ if (contactForm) {
       // Collect form data for Firestore
       var formData = {
         name: firstName.value.trim() + ' ' + lastName.value.trim(),
+        email: document.getElementById('contact-email') ? document.getElementById('contact-email').value.trim() : '',
         phone: phone.value.trim(),
         year: document.getElementById('year').value.trim(),
         make: document.getElementById('make').value.trim(),
@@ -105,7 +138,11 @@ if (contactForm) {
         licensePlate: document.getElementById('license-plate').value.trim(),
         preferredDate: document.getElementById('preferred-date').value ||
                        (document.getElementById('asap') && document.getElementById('asap').checked ? 'ASAP' : ''),
-        message: document.getElementById('message').value.trim()
+        callbackTime: document.getElementById('callback-time') ? document.getElementById('callback-time').value : '',
+        message: document.getElementById('message').value.trim(),
+        smsConsent: document.getElementById('sms-consent') ? document.getElementById('sms-consent').checked : false,
+        emailConsent: document.getElementById('email-consent') ? document.getElementById('email-consent').checked : false,
+        marketingConsent: document.getElementById('marketing-consent') ? document.getElementById('marketing-consent').checked : false
       };
 
       // Show loading state

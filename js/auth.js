@@ -295,7 +295,7 @@
   }
 
   // --- Signup ---
-  window.handleSignup = function(email, password, firstName, lastName, phone, smsConsent) {
+  window.handleSignup = function(email, password, firstName, lastName, phone, smsConsent, emailConsent, marketingConsent) {
     console.log('[Signup] Starting signup for:', email);
     var fullName = firstName + ' ' + lastName;
     window._authActionInProgress = true;
@@ -306,6 +306,7 @@
         // Update display name
         return user.updateProfile({ displayName: fullName }).then(function() {
           console.log('[Signup] Display name updated.');
+          var now = firebase.firestore.FieldValue.serverTimestamp();
           // Save profile to Firestore with emailVerified: false (new signup requiring verification)
           return db.collection('users').doc(user.uid).set({
             name: fullName,
@@ -314,10 +315,15 @@
             phone: phone,
             email: email,
             smsConsent: !!smsConsent,
+            smsConsentAt: now,
+            emailConsent: !!emailConsent,
+            emailConsentAt: now,
+            marketingConsent: !!marketingConsent,
+            marketingConsentAt: marketingConsent ? now : null,
             tosAccepted: true,
-            tosAcceptedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            tosAcceptedAt: now,
             emailVerified: false,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            createdAt: now
           });
         }).then(function() {
           console.log('[Signup] Firestore user doc saved. Sending verification email...');
@@ -436,20 +442,34 @@
             }
 
             // Fallback: no handler (e.g. on signup tab where consent was already given).
+            // If signup is disabled (no consent values), block new user creation.
+            if (!window._signupConsentValues) {
+              console.log('[Google Sign-In] Signup disabled — deleting new auth user.');
+              return deleteAuthUserAndSignOut(user).then(function() {
+                window._authActionInProgress = false;
+                if (typeof showMessage === 'function') {
+                  showMessage('New account registration is currently unavailable. Please call us at 231-675-0723 to schedule an appointment.', true);
+                }
+              });
+            }
             // Create their Firestore profile immediately.
             // Google accounts have pre-verified emails, so set emailVerified: true
-            // Check the global flag first, then fall back to the Google consent checkbox
-            var googleConsentEl = document.getElementById('google-consent-checkbox');
-            var smsConsent = !!window._signupConsent || !!(googleConsentEl && googleConsentEl.checked);
+            var consentVals = window._signupConsentValues;
+            var now = firebase.firestore.FieldValue.serverTimestamp();
             var userData = {
               name: user.displayName || '',
               email: user.email || '',
               phone: '',
-              smsConsent: smsConsent,
+              smsConsent: !!consentVals.sms,
+              smsConsentAt: consentVals.sms ? now : null,
+              emailConsent: !!consentVals.email,
+              emailConsentAt: consentVals.email ? now : null,
+              marketingConsent: !!consentVals.marketing,
+              marketingConsentAt: consentVals.marketing ? now : null,
               tosAccepted: true,
-              tosAcceptedAt: firebase.firestore.FieldValue.serverTimestamp(),
+              tosAcceptedAt: now,
               emailVerified: true,
-              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              createdAt: now
             };
             console.log('[Google Sign-In] New user detected. Creating doc...');
             return createUserDoc(user.uid, userData).then(function() {
@@ -524,17 +544,29 @@
           phoneField.value = data.phone;
         }
 
-        // Hide consent checkbox if user already consented
-        if (data.smsConsent === true) {
-          var consentCheckbox = document.getElementById('sms-consent');
-          var consentGroup = consentCheckbox ? consentCheckbox.closest('.consent-group') : null;
-          if (consentGroup) {
-            consentGroup.style.display = 'none';
-          }
-          if (consentCheckbox) {
-            consentCheckbox.checked = true;
-          }
+        // Pre-fill email field
+        var emailField = document.getElementById('contact-email');
+        if (emailField && !emailField.value && data.email) {
+          emailField.value = data.email;
         }
+
+        // Pre-fill consent checkboxes based on stored preferences
+        // ToS is always pre-checked for logged-in users (they accepted at signup)
+        var tosCheckbox = document.getElementById('tos-consent');
+        if (tosCheckbox) tosCheckbox.checked = true;
+
+        var smsCheckbox = document.getElementById('sms-consent');
+        if (smsCheckbox && data.smsConsent === true) smsCheckbox.checked = true;
+
+        var emailCheckbox = document.getElementById('email-consent');
+        if (emailCheckbox && data.emailConsent === true) {
+          emailCheckbox.checked = true;
+          var star = document.getElementById('emailRequiredStar');
+          if (star) star.style.display = 'inline';
+        }
+
+        var marketingCheckbox = document.getElementById('marketing-consent');
+        if (marketingCheckbox && data.marketingConsent === true) marketingCheckbox.checked = true;
 
         // Pre-fill with first saved vehicle if available
         db.collection('users').doc(user.uid).collection('vehicles').limit(1).get()
@@ -597,6 +629,10 @@
       licensePlate: formData.licensePlate || '',
       preferredDate: formData.preferredDate || 'ASAP',
       message: formData.message || '',
+      smsConsent: !!formData.smsConsent,
+      emailConsent: !!formData.emailConsent,
+      marketingConsent: !!formData.marketingConsent,
+      consentTimestamp: firebase.firestore.FieldValue.serverTimestamp(),
       status: 'pending',
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
